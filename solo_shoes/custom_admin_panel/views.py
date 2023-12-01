@@ -65,6 +65,8 @@ def dashboard(request):
         return render(request,'custom_admin_panel/dashboard.html',context)
     return redirect('custom_admin_panel:adminlogin')
 
+# hello
+
 def admin_dash(request):
     all_orders = Order.objects.all()
     # all_variations = ProductLanguageVariation.objects.all()
