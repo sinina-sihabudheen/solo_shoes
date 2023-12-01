@@ -1,10 +1,12 @@
+import random
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import CustomPasswordChangeForm, CustomUserDetailsForm, AddressForm
 from django.contrib.auth import update_session_auth_hash
 from .models import ShippingAddress,Order,OrderItem
-
+from .helpers import render_to_pdf
 
 
 
@@ -129,6 +131,30 @@ def cancel_order(request, order_id):
     order.save()  # Save the changes
     messages.success(request, 'Your order is successfully cancelled... ')
     return redirect('user_profile:myorder')
+
+@login_required
+def generate_invoice(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    invoice_number = str(random.randint(100000, 999999))
+
+
+    context = {
+        'order': order,
+        'invoice_number':invoice_number,
+       
+    }
+ 
+
+    pdf = render_to_pdf('user_profile/invoice.html', context)
+    if pdf:
+        response = HttpResponse(pdf, content_type='application/pdf')
+        filename =f"invoice_{order.id}.pdf"
+        content = "inline; filename='%s'" % filename
+        response['Content-Disposition'] = content
+        return response
+    else:
+        print("Error generating the PDF.")
+        return HttpResponse("Error generating the invoice.")
 
 
 

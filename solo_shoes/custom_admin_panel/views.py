@@ -73,9 +73,12 @@ def dashboard(request):
 
         if query:
             emp = emp.filter(Q(first_name_icontains=query) | Q(emailicontains=query) | Q(username_icontains=query))
-        all_orders = Order.objects.all()
         
-        all_order_items = OrderItem.objects.filter(delivery_status='D')
+        all_orders = Order.objects.all()
+
+        order_delivered = OrderItem.objects.filter(delivery_status='D')
+        
+        all_order_items = OrderItem.objects.all()
         
 
         
@@ -96,13 +99,14 @@ def dashboard(request):
         if start_date:
             all_orders = all_orders.filter(date_ordered__gte=start_date)
 
-    
+        
         total_revenue = sum(order.get_cart_total for order in all_orders)
         total_sales = sum(order.get_cart_items for order in all_orders)
                      
         cod_orders = all_orders.filter(payment_method='COD')
         cod_count = cod_orders.count()    
-        cod_total = sum(order.get_cart_total for order in cod_orders)       
+        cod_total = sum(order.get_cart_total for order in cod_orders)
+         
 
 
         context = {
@@ -114,6 +118,7 @@ def dashboard(request):
             'cod_count': cod_count,            
             'cod_total': cod_total,        
             'filter_type': filter_type,  
+            'order_delivered': order_delivered,
         }
 
         return render(request,'custom_admin_panel/dashboard.html',context)

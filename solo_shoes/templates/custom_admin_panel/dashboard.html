@@ -110,13 +110,12 @@
                           </div>
                           <div class="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
                               <h6 class="font-weight-bold mb-0"> ₹ 
+                                
                                   {% if order.payment_method == 'COD' %}
+                                  
                                       {{ cod_total }}
-                                  {% elif order.payment_method == 'RAZ' %}
-                                      {{ online_total }}
-                                  {% elif order.payment_method == 'WAL' %}
-                                      {{ wallet_total }}
-                                  {% endif %}
+                                      {% endif %}
+                                  
                               </h6>
                           </div>
                       </div>

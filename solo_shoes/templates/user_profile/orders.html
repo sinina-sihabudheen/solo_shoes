@@ -32,7 +32,8 @@
                         {% else %}
                              <span class="mt-1 label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
                         {% endif %}
-                        
+                        <a href="{% url 'user_profile:generate_invoice' order.id %}" target="_blank" download>Download Invoice</a>
+
                     </li>
                 {% endfor %}
             </ul>
