@@ -1,0 +1,129 @@
+{% load static %}
+{% include 'custom_admin_panel/inc/header.html' %}
+<div class="main-panel">
+    <div class="content-wrapper">
+        <!-- ... other content ... -->
+
+        <div class="row">
+            <div class="col-12 grid-margin">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h4 class="card-title">Category Management</h4>
+                            <a href="{% url 'custom_admin_panel:add_category' %}">
+                                &nbsp;<b>+</b>&nbsp;Add Category</a>
+                        </div>
+                        <hr class="white-line my-4">
+                        <div class="mb-5">
+                            <ul class="navbar-nav w-100">
+                                <li class="nav-item w-100">
+                                    <!-- Search Form -->
+                                    <form method="get" action="{% url 'custom_admin_panel:category_list' %}" class="nav-link mt-2 mt-md-0 col-12 d-lg-flex search">
+                                        {% csrf_token %}
+                                        <input type="text" name="q"  placeholder="Search Category" value="{{ query }}" class="form-control mb-1 text-light">
+                                        <button type="submit" class="btn-inverse-info mb-1">Search</button>
+                                        
+                                    </form>
+
+
+                                    </li>
+                            </ul>
+                        </div>
+
+                        <!-- Category Table -->
+                        <div class="table-responsive">
+                            <table class="table text-center">
+                                <thead>
+                                    <tr>
+                                        <th>Category Name</th>
+                                        <th>Is Active</th>
+                                        <th>Action</th>
+                                        <th>Status</th>
+                                        <th>Offer Added</th>
+                                        <th>Offer Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category in categories %}
+                                    <tr>
+                                        <td>{{ category.category_name }}</td>
+                                        <td>{{ category.is_active }}</td>
+                                        <td>
+                                           
+                                        
+                                           <!-- Edit Category Link -->
+                                        <a href="{% url 'custom_admin_panel:edit_category' category.id %}" class="btn btn-inverse-warning">
+                                            Edit Item
+                                        </a>
+
+                                        </td>
+
+                                        <td>
+                                            {% if category.is_active %}
+                                                <a href="{% url 'custom_admin_panel:block_category' category.id %}" class="badge badge-danger">Block</a>
+                                            {% else %}
+                                                <a href="{% url 'custom_admin_panel:unblock_category' category.id %}" class="badge badge-success">Unblock</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>{% if category.offer %}
+                                            <a href="{% url 'custom_admin_panel:offer' %}">{{ category.offer.category_offer_name }}</a>
+                                            {% else %}
+                                            Null
+                                            {% endif %}
+                                        </td>
+                                        <td>{% if category.offer %}
+                                            {{ category.offer.discount_percentage }}
+                                            {% else %}
+                                            N/A
+                                            {% endif %}
+                                        </td>
+                                        
+                                    </tr>
+
+                                    <!-- Block Category Modal Content -->
+                                    <div class="modal fade" id="blockModal{{ category.id }}" tabindex="-1" aria-labelledby="blockModalLabel{{ category.id }}" aria-hidden="true">
+                                        <!-- ... Your existing modal content for blocking ... -->
+                                    </div>
+
+                                    <!-- Edit Category Modal Content -->
+                                    <div class="modal fade" id="editModal{{ category.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ category.id }}" aria-hidden="true">
+                                        <!-- ... Your existing modal content for editing ... -->
+                                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- plugins:js -->
+<script src="{% static 'adminside/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<script src="{% static 'adminside/assets/vendors/chart.js/Chart.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{% static 'adminside/assets/js/off-canvas.js' %}"></script>
+<script src="{% static 'adminside/assets/js/hoverable-collapse.js' %}"></script>
+<script src="{% static 'adminside/assets/js/misc.js' %}"></script>
+<script src="{% static 'adminside/assets/js/settings.js' %}"></script>
+<script src="{% static 'adminside/assets/js/todolist.js' %}"></script>
+<!-- endinject -->
+<!-- Custom js for this page -->
+<script src="{% static 'adminside/assets/js/dashboard.js' %}"></script>
+<!-- End custom js for this page -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+</body>
+</html>

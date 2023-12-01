@@ -1,0 +1,77 @@
+<!-- basic table  -->
+{% load static %}
+{% include 'custom_admin_panel/inc/header.html' %}
+
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Customers</h4>
+                        <p class="card-description">"Customers are the boss of a business."</p>
+                        <div class="table-responsive">
+                            <div class="search-bar">
+                              <form action="{% url 'custom_admin_panel:user_management' %}" method="get" class="nav-link mt-2 mt-md-0 col-12 d-lg-flex search">
+                                {% csrf_token %}
+                                <input type="text" name="key" class="form-control mb-1 text-light" placeholder="Search User">
+                                <button type="submit" class="btn-inverse-info mb-1">Search</button>
+                            </form>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>First Name</th>
+                                        <th>Last Name</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in cus %}
+                                    <tr>
+                                        <td>{{i.username}}</td>
+                                        <td>{{i.first_name}}</td>
+                                        <td>{{i.last_name}}</td>
+                                        <td>{{i.email}}</td>
+                                        <td>
+                                            {% if i.is_active == False %}
+                                                <a href="{% url 'custom_admin_panel:unblock_user' i.id %}" class="badge badge-danger">Unblock</a>
+                                            {% else %}
+                                                <a href="{% url 'custom_admin_panel:block_user' i.id %}" class="badge badge-success">Block</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+ <!-- plugins:js -->
+ <script src="{% static 'adminside/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+ <!-- endinject -->
+ <!-- Plugin js for this page -->
+ <script src="{% static 'adminside/assets/vendors/chart.js/Chart.min.js' %}"></script>
+ <script src="{% static 'adminside/assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+ <script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+ <script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+ <script src="{% static 'adminside/assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+ <!-- End plugin js for this page -->
+ <!-- inject:js -->
+ <script src="{% static 'adminside/assets/js/off-canvas.js' %}"></script>
+ <script src="{% static 'adminside/assets/js/hoverable-collapse.js' %}"></script>
+ <script src="{% static 'adminside/assets/js/misc.js' %}"></script>
+ <script src="{% static 'adminside/assets/js/settings.js' %}"></script>
+ <script src="{% static 'adminside/assets/js/todolist.js' %}"></script>
+ <!-- endinject -->
+ <!-- Custom js for this page -->
+ <script src="{% static 'adminside/assets/js/dashboard.js' %}"></script>
+ <!-- End custom js for this page -->
+</body>
+</html>

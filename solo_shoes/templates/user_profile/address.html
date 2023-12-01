@@ -1,0 +1,177 @@
+{% load static %}
+
+<!-- header -->
+{% include 'user_authentication/inc/navbar.html' %}
+<!-- end-header -->
+
+{% block content %}
+    <div class="container">
+        <div class="page-header text-center">
+            <h1 class="page-title">My Addresses<span>{{request.user.username}}</span></h1>
+        </div>
+        
+
+        <div class="">
+            <div class="  py-3">
+
+                <a href="{% url 'user_profile:addaddress' %}" class="btn btn-outline-primary-2 float-right add-address-btn">
+                    <span>Add Address</span>
+                    <i class="icon-plus"></i>
+                </a>
+            </div>
+            <h5 class="card-title mb-2">Shipping Address:</h5>
+
+            <div class="col-12 row d-flex justify-content-center">
+                
+                {% for address in user_addresses %}
+                <div class="col-md-4 ">
+                     
+                    <div class="card mb-3 col-11 mx-auto">
+                        <div class="card-body bg-light p-4" style="border: 1px solid #dddddd; border-radius: 7px; ">                            
+                            
+                            <p data-field="full_name">{{ address.full_name }}</p>
+                            <p data-field="address_lines">{{ address.address_lines }}</p>
+                            <p data-field="city">{{ address.city }}</p>
+                            <p data-field="state"> {{ address.state }} </p>
+                            <p data-field="pin_code"> {{ address.pin_code }}</p>
+                            <p data-field="country">{{ address.country }}</p>
+                            <p data-field="mobile">{{ address.mobile }}</p>
+
+                            <!-- Edit button -->
+                           <!-- <div class="row col-12"> -->
+                            <a href="{% url 'user_profile:editaddress' address.id %}"  class="  btn btn-outline-primary-2 edit-address-btn">
+                                <span>Edit Address</span>
+                                <i class="icon-edit"></i>
+                            </a>
+                            <a href="{% url 'user_profile:deleteaddress' address.id %}"  class="mt-1  btn btn-outline-danger delete-address-btn">
+                                <span>Delete Address</span>
+                                <i class="icon-trash"></i>
+                            </a>
+                           <!-- </div> -->
+                        </div><!-- End .card-body -->
+                    </div>
+
+                </div> 
+                
+                                
+                {% endfor %}
+
+
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                
+                
+                <div class="card new-address-form col-12 bg-light" style="display: none;">
+                    <div class="card-body">
+                        <form method="post" action="{% url 'user_profile:addaddress' %}">
+                            {% csrf_token %}
+                            <table class="table">
+                                <tbody>
+                                    {% for field in address_form.visible_fields %}
+                                        <tr>
+                                            <td>{{ field.label_tag }}</td>
+                                            <td>{{ field }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <button type="submit" class="btn btn-outline-primary-2">
+                                <span>Submit</span>
+                                <i class="icon-long-arrow-right"></i>
+                            </button>
+                        </form>
+                    </div><!-- End .card-body -->
+                </div><!-- End .card -->
+<!-- 
+                {% if address_form.errors %}
+    <ul class="errorlist">
+        {% for error in address_form.errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+{% endif %} -->
+
+                <!-- Add a new address form (initially hidden) -->
+               
+            </div><!-- End .col-md-8 -->
+
+            <!-- Add Address Button on the Right -->
+            
+        </div><!-- End .row -->
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    
+    const addBtn = document.querySelector('.add-address-btn');
+    const addressForm = document.querySelector('.new-address-form');
+    const addressInputs = addressForm.querySelectorAll('input[type="text"]');
+
+    function handleEditButtonClick(e) {
+        e.preventDefault();
+
+        // Find the parent card of the clicked edit button
+        const card = this.closest('.card');
+
+        // Find the associated form within the card
+        const form = addressForm;
+
+        // Display the form
+        form.style.display = 'block';
+
+        // Populate the form fields with the corresponding address details
+        addressInputs.forEach(input => {
+            const fieldName = input.getAttribute('name');
+            const fieldValue = card.querySelector(`[data-field="${fieldName}"]`).innerText.trim();
+            input.value = fieldValue;
+        });
+    }
+
+    
+
+
+    addBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        addressForm.style.display = 'block';
+
+        // Clear all input fields
+        addressInputs.forEach(input => {
+            input.value = '';
+        });
+    });
+});
+
+
+    </script>
+
+    
+    
+    
+{% endblock %}
+
+
+{% include 'user_authentication/inc/footer.html' %}
+<!-- End .footer -->
+
+</div>
+<!-- End .page-wrapper -->
+<button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+<!-- Plugins JS File -->
+<script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+<!-- Main JS File -->
+<script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+<!-- molla/dashboard.html  22 Nov 2019 10:03:13 GMT -->
+</html>

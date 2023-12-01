@@ -1,0 +1,54 @@
+
+{% load static %}
+
+<!-- header -->
+{% include 'user_authentication/inc/navbar.html' %}
+<!-- end-header -->
+
+{% block content %}
+<h4>EDIT ADDRESS</h4>
+    <div class="">
+        <form method="post" action="{% url 'user_profile:editaddress' address_id=user_address.id %}">
+            {% csrf_token %}
+            <table class="table">
+                <tbody>
+                    {% for field in address_form.visible_fields %}
+                        <tr>
+                            <td>{{ field.label_tag }}</td>
+                            <td>{{ field }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-outline-primary-2">
+                <span>Submit</span>
+                <i class="icon-long-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+
+
+{% endblock %}
+
+
+{% include 'user_authentication/inc/footer.html' %}
+<!-- End .footer -->
+
+</div>
+<!-- End .page-wrapper -->
+<button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+<!-- Plugins JS File -->
+<script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+<!-- Main JS File -->
+<script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+<!-- molla/dashboard.html  22 Nov 2019 10:03:13 GMT -->
+</html>

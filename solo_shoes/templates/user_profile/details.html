@@ -1,0 +1,71 @@
+{% load static %}
+
+        <!-- header -->
+        {% include 'user_authentication/inc/navbar.html' %}
+        <!-- end-header -->
+
+        <main class="main">
+        	<div class="page-header text-center" style="background-image: url('user_auth/assets/images/page-header-bg.jpg')">
+        		<div class="container">
+        			<h1 class="page-title">Account Details<span>{{request.user.username}}</span></h1>
+        		</div><!-- End .container -->
+        	</div><!-- End .page-header -->
+            
+            <div class="col-sm-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="container">
+                            <h4>Edit Details Here</h4>
+                    
+                            <form method="post" action="{% url 'user_profile:editdetails' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="form_type" value="password_change">                                                       
+                             
+            
+                            <div style="margin: 0 auto; max-width: 80%;" >
+                                <table class="table">
+                                    <tbody>
+                                        {% for field in user_details_form %}
+                                            <tr>
+                                                <td>{{ field.label_tag }}</td>
+                                                <td>{{ field }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                    
+                                <button type="submit" class="btn btn-outline-primary-2">
+                                    <span>SAVE CHANGES</span>
+                                    <i class="icon-long-arrow-right"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div><!-- End .card-body -->
+                </div><!-- End .card -->
+            </div><!-- End .col-sm-6 -->
+            
+            
+            
+            
+        </main><!-- End .main -->
+
+        {% include 'user_authentication/inc/footer.html' %}
+        <!-- End .footer -->
+        
+           </div>
+           <!-- End .page-wrapper -->
+           <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+    <!-- Plugins JS File -->
+    <script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+    <!-- Main JS File -->
+    <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+</html>

@@ -1,0 +1,113 @@
+
+{% load static %}
+
+<!-- header -->
+{% include 'user_authentication/inc/navbar.html' %}
+<!-- end-header -->
+        <main class="main">
+        	<div class="page-header text-center" style="background-image: url('assets/images/page-header-bg.jpg')">
+        		<div class="container">
+        			<h1 class="page-title">Wishlist<span>{{ request.user}}</span></h1>
+        		</div><!-- End .container -->
+        	</div><!-- End .page-header -->
+            <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                <div class="container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Shop</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Wishlist</li>
+                    </ol>
+                </div><!-- End .container -->
+            </nav><!-- End .breadcrumb-nav -->
+
+            <div class="page-content">
+            	<div class="container">
+					<table class="table table-wishlist table-mobile">
+						<thead>
+							<tr>
+								<th>Product</th>
+                                <th>Product Image</th>
+								<th>Price</th>
+								<th>Stock Status</th>
+								<th></th>
+								<th></th>
+							</tr>
+						</thead>
+
+						<tbody>
+							<tr>
+                                {% for item in wishlist.products.all %}
+                                <td class="price-col">
+                                    {{ item.product_name }}
+                                </td>
+								<td class="product-col">
+									<div class="product">
+										<figure class="product-media">
+											<a href="#">
+												<img src="{{ item.productimage_set.first.image.url }}" alt="Product image">
+											</a>
+										</figure>
+
+										
+									</div><!-- End .product -->
+								</td>
+								<td class="price-col">{{ '₹ ' }}{{ item.price }}</td>
+                               
+								<td class="stock-col">
+                                    {% if item.stock <= 0 %}
+                                        <span>Out Of Stock</span>
+                                    {% else %}
+                                        <span>In Stock</span>
+                                	{% endif %}
+                                </td>
+                                <td class="action-col">
+                                
+                                    <form action="{% url 'store:product' product_id=item.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-block btn-outline-primary-2">
+                                            <i class="icon-cart-plus"></i>View Product
+                                        </button>
+                                    </form>
+                                </td>
+                                    
+								
+                                <td class="remove-col">
+                                    {% if item.id %}
+                                        <form action="{% url 'store:remove_from_wishlist' product_id=item.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-remove"><i class="icon-close"></i></button>
+                                        </form>
+                                    {% endif %}
+
+                                </td>
+                            </tr>
+							{% endfor %}
+						</tbody>
+					</table><!-- End .table table-wishlist -->
+	            	
+            	</div><!-- End .container -->
+            </div><!-- End .page-content -->
+        </main><!-- End .main -->
+        <!--footer -->
+ {% include 'user_authentication/inc/footer.html' %}
+ <!-- End .footer -->
+ 
+    <!-- </div> -->
+	<!-- End .page-wrapper -->
+    <!-- <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button> -->
+
+       
+
+    <!-- Plugins JS File -->
+    <script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+    <!-- Main JS File -->
+    <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+
+</html>

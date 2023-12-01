@@ -1,0 +1,222 @@
+{% load static %}
+
+        <!-- header -->
+        {% include 'user_authentication/inc/navbar.html' %}
+        <!-- end-header -->
+		
+
+
+        <main class="main">
+        	<div class="page-header text-center" style="background-image: url('user_auth/assets/images/page-header-bg.jpg')">
+        		<div class="container">
+        			<h1 class="page-title">Checkout<span>Shop</span></h1>
+        		</div><!-- End .container -->
+        	</div><!-- End .page-header -->
+            <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                <div class="container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Shop</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+                    </ol>
+                </div><!-- End .container -->
+            </nav><!-- End .breadcrumb-nav -->
+
+            <div class="page-content">
+            	<div class="checkout">
+	                <div class="container">
+            			<div class="checkout-discount">
+            				<form action="#">
+        						<input type="text" class="form-control" required id="checkout-discount-input">
+            					<label for="checkout-discount-input" class="text-truncate">Have a coupon? <span>Click here to enter your code</span></label>
+            				</form>
+            			</div>
+						
+            			<form action="{% url 'carts:checkout' %}" method="post">
+                            {% csrf_token %}
+		                	<div class="row">
+		                		<div class="col-lg-12 row" style="display: flex; flex-direction: row-reverse;">
+									<aside class="col-4 " >
+										<div class="summary">
+											<h3 class="summary-title">Your Order</h3><!-- End .summary-title -->
+	
+											<table id="productDetailsTable" class="table table-summary">
+												<thead>
+													<tr>
+														<th>Product</th>
+														<th>Total</th>
+													</tr>
+												</thead>
+	
+												<tbody>
+													{% for cart_item in cart_items %}
+														<tr>
+															<td><a href="#">{{ cart_item.product.product_name }}</a></td>
+															<td>{{ cart_item.product.price }}</td>
+														</tr>
+													{% endfor %}
+	
+													<tr class="summary-subtotal">
+														<td>Subtotal:</td>
+														<td>{{ '₹ ' }}{{ total }}</td>
+													</tr><!-- End .summary-subtotal -->
+	
+													<tr>
+														<td>Shipping:</td>
+														<td>Free shipping</td>
+													</tr>
+	
+													<tr class="summary-total">
+														<td>Total:</td>
+														<td>{{ '₹ ' }}{{ total }}</td>
+													</tr><!-- End .summary-total -->
+													
+												</tbody>
+	
+											</table><!-- End .table table-summary -->
+	
+											<div class="accordion-summary" id="accordion-payment">
+																						
+												<div class="card">
+											
+													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
+														<input class="form-check-input col-3" type="radio" value="online" id="online" name="payment" disabled>
+														<label class="col-9  mx-auto mx-5" for="online">
+															Online
+														</label>
+
+													</div>
+													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
+														<input class="form-check-input col-3" type="radio" value="cod" id="cod" name="payment">
+														<label class="col-9  mx-auto mx-5" for="cod">
+															COD
+														</label>
+													</div>
+													
+												</div>																						
+											</div><!-- End .accordion -->
+											<button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">
+												<span class="btn-text">Place Order</span>
+												<span class="btn-hover-text">Proceed to Checkout</span>
+											</button>
+										</form>
+											</div><!-- End .summary -->
+									</aside><!-- End .col-lg-3 -->
+		                			
+									<!-- Existing shipping addresses -->
+									<div class="col-8" >
+										<label>Shipping Address:</label>
+										{% for address in user_addresses %}
+											<div class=" bg-light py-4 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
+												<input class="form-check-input col-1" type="radio" id="shipping_address_{{ address.id }}" name="shipping_address">
+												<!-- <input type="radio" id="shipping_address_{{ address.id }}" name="shipping_address" class=" mt-5  custom-control-input" value="{{ address.id }}" {% if address == user_address %}checked{% endif %}> -->
+												<label class="col-9   mx-auto mx-5" for="shipping_address_{{ address.id }}">
+													{{ address.full_name }} - {{ address.address_lines }}, {{ address.city }}, {{ address.state }}, {{ address.pin_code }} - {{ address.country }} - {{ address.mobile }}
+												</label>
+												<a href="" class=" col-1 btn btn-link">Edit</a>
+											</div>
+										{% endfor %}
+
+										<!-- Add a New Address radio button -->
+										<div class="custom-control custom-radio">
+											<input type="radio" id="add_new_address" name="shipping_address" class="custom-control-input" value="add_new">
+											<label class="custom-control-label" for="add_new_address">Add a New Address</label>
+										</div>
+
+										<!-- Address form (initially hidden) -->
+										<div id="newAddressForm" style="display: none;">
+											<form action="{% url 'carts:add_address' %}" method="post">
+												{% csrf_token %}
+												<div class="row">
+													<div class="col-lg-9">
+														<h2 class="checkout-title">Address Details</h2><!-- End .checkout-title -->
+															<div class="row">
+																<div class="col-sm-6">
+																	<label>Full Name *</label>
+																	<input type="text" class="form-control" name="full_name" required>
+																</div><!-- End .col-sm-6 -->								
+																
+															</div><!-- End .row -->
+																					
+																							
+															<label>Address lines *</label>
+															<input type="text" class="form-control" name="address_lines" required>
+															
+															<label>Country *</label>
+															<input type="text" class="form-control" name="country" required>
+															
+															<div class="row">
+																<div class="col-sm-6">
+																	<label>Town / City *</label>
+																	<input type="text" class="form-control" name="city" required>
+																</div><!-- End .col-sm-6 -->
+												
+																<div class="col-sm-6">
+																	<label>State *</label>
+																	<input type="text" class="form-control" name="state" required>
+																</div><!-- End .col-sm-6 -->
+															</div><!-- End .row -->
+												
+															<div class="row">
+																<div class="col-sm-6">
+																	<label>Postcode *</label>
+																	<input type="text" class="form-control" name="pin_code" required>
+																</div><!-- End .col-sm-6 -->
+												
+																<div class="col-sm-6">
+																	<label>Phone *</label>
+																	<input type="tel" class="form-control" name="mobile" required>
+																</div><!-- End .col-sm-6 -->
+															</div><!-- End .row -->
+												<!-- Add form fields for the new address here -->
+												<button type="submit" class="btn btn-primary">Save Address</button>
+											</form>
+										</div>
+									</div>
+
+				
+
+							<script>
+								document.addEventListener('DOMContentLoaded', function () {
+									// Get references to the radio buttons and the address form
+									var addNewAddressRadio = document.getElementById('add_new_address');
+									var newAddressForm = document.getElementById('newAddressForm');
+
+									// Add event listener to the radio button
+									addNewAddressRadio.addEventListener('change', function () {
+										// Toggle the visibility of the address form based on the radio button state
+										newAddressForm.style.display = addNewAddressRadio.checked ? 'block' : 'none';																	
+
+										// Toggle the visibility of the "Product Details" table
+										var productDetailsTable = document.getElementById('productDetailsTable');
+										productDetailsTable.style.display = addNewAddressRadio.checked ? 'none' : 'block';
+									});
+								});
+							</script>
+
+								</div><!-- End .col-lg-9 -->
+		                	</div><!-- End .row -->
+            			
+	                </div><!-- End .container -->
+                </div><!-- End .checkout -->
+            </div><!-- End .page-content -->
+        </main><!-- End .main -->
+
+        {% include 'user_authentication/inc/footer.html' %}
+    </div><!-- End .page-wrapper -->
+    <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+    <!-- Plugins JS File -->
+    <script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+    <script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+    <!-- Main JS File -->
+    <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+
+<!-- molla/checkout.html  22 Nov 2019 09:55:06 GMT -->
+</html>

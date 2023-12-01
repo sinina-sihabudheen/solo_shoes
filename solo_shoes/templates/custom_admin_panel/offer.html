@@ -1,0 +1,101 @@
+{% load static %}
+{% include 'custom_admin_panel/inc/header.html' %}
+
+{% block content %}
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="row">
+  
+   
+
+    <h3>Category Offers</h3>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                    <tr>
+                        <th>Offer Name</th>
+                        <th>Discount_percentage</th>
+                        <th>start_Date</th>
+                        <th>End_Date</th>
+                        <th>Is_Active</th>
+                        <th>Action</th>
+                    </tr>
+            </thead>
+      <!-- Table for Category Offers -->
+            <tbody>
+            {% for offer in category_offers %}
+                <tr>
+            
+                <td>{{ offer.category_offer_name }}</td>
+                <td>{{ offer.discount_percentage }}</td>
+                <td>{{ offer.date_start }}</td>
+                <td>{{ offer.date_end }}</td>
+                <td>{{ offer.active }}</td>
+                <td><a href="{% url 'custom_admin_panel:category_off_edit' offer.id %}"><span>Edit Offer</span></a></td>
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+        <a href="{% url 'custom_admin_panel:category_off_add' %}" class="addlink">Add New Offer</a>
+    </div>
+
+    <h3>Product Offers</h3>
+    <div class="table-responsive">
+        <table class="table">
+      <!-- Table for Product Offers -->
+            <thead>
+                <tr>
+                    <th>Offer Name</th>
+                    <th>Discount_percentage</th>
+                    <th>start_Date</th>
+                    <th>End_Date</th>
+                    <th>Is_Active</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            
+            {% for offer in product_offers %}
+                <tr>
+                
+                <td>{{ offer.offer_name }}</td>
+                <td>{{ offer.discount_percentage }}</td>
+                <td>{{ offer.date_start }}</td>
+                <td>{{ offer.date_end }}</td>
+                <td>{{ offer.active }}</td>
+                <td><a href="{% url 'custom_admin_panel:product_off_edit' offer.id %}"><span>Edit Offer</span></a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    <!-- Add buttons or links to manage offers -->
+    <a href="{% url 'custom_admin_panel:product_off_add' %}" class="addlink">Add New Offer</a>
+  </div>
+</div>
+</div>
+</div>
+{% endblock %}
+<!-- plugins:js -->
+<script src="{% static 'adminside/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<script src="{% static 'adminside/assets/vendors/chart.js/Chart.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{% static 'adminside/assets/js/off-canvas.js' %}"></script>
+<script src="{% static 'adminside/assets/js/hoverable-collapse.js' %}"></script>
+<script src="{% static 'adminside/assets/js/misc.js' %}"></script>
+<script src="{% static 'adminside/assets/js/settings.js' %}"></script>
+<script src="{% static 'adminside/assets/js/todolist.js' %}"></script>
+<!-- endinject -->
+<!-- Custom js for this page -->
+<script src="{% static 'adminside/assets/js/dashboard.js' %}"></script>
+<!-- End custom js for this page -->
+</body>
+</html>

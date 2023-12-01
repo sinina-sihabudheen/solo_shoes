@@ -1,0 +1,34 @@
+{% load static %}
+{% include 'custom_admin_panel/inc/header.html' %}
+{% block content %}
+  <h1>Category List</h1>
+  <ul>
+    {% for category in categories %}
+      <li>{{ category.category_name }} ({{ category.is_active }})</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
+<!-- plugins:js -->
+<script src="{% static 'adminside/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<script src="{% static 'adminside/assets/vendors/chart.js/Chart.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{% static 'adminside/assets/js/off-canvas.js' %}"></script>
+<script src="{% static 'adminside/assets/js/hoverable-collapse.js' %}"></script>
+<script src="{% static 'adminside/assets/js/misc.js' %}"></script>
+<script src="{% static 'adminside/assets/js/settings.js' %}"></script>
+<script src="{% static 'adminside/assets/js/todolist.js' %}"></script>
+<!-- endinject -->
+<!-- Custom js for this page -->
+<script src="{% static 'adminside/assets/js/dashboard.js' %}"></script>
+<!-- End custom js for this page -->
+
+</body>
+</html>

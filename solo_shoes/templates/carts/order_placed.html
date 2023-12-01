@@ -1,0 +1,53 @@
+
+{% load static %}
+
+        {% include 'user_authentication/inc/navbar.html' %}
+<div class="row d-flex justify-content-center align-items-center d-flex otp-box">
+    <div class="col-12 col-md col-lg-4">
+        <div class="card bg-white mb-5 mt-5 border-0 my-5">
+            <div data-aos="fade-up" data-aos-anchor-placement="center-bottom"
+                 class="p-5 d-flex flex-column justify-content-center text-center"
+                 style="border-radius: 15px; border: 0.01px solid #d8d8d8; background: #ffffff;">
+
+                 <div class="d-flex justify-content-center">
+                    <i class="fas fa-check-circle text-success" style="font-size: 48px;"></i>
+                </div>
+                
+                <div class="d-flex flex-column pb-5">
+                    <h5 class="text-success" style="font-weight: 300;">Thank you for your order</h5>
+                    <p class="text-center">Thank you for your purchase! Now we're preparing for the shipment</p>
+                    <a href="{% url 'store:shop' %}" class="btn btn-outline-dark mt-3 col-7 d-flex mx-auto"
+                       onmouseover="this.style.color='#fff'" onmouseleave="this.style.color='#000'">Continue Shopping</a>
+                       <a href="{% url 'user_profile:myorder' %}" class="btn btn-outline-dark mt-3 col-7 d-flex mx-auto"
+                       onmouseover="this.style.color='#fff'" onmouseleave="this.style.color='#000'">My Orders</a>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--footer -->
+{% include 'user_authentication/inc/footer.html' %}
+<!-- End .footer -->
+      
+   </div><!-- End .page-wrapper -->
+
+   <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+   <!-- Plugins JS File -->
+   <script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/wNumb.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/bootstrap-input-spinner.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/jquery.magnific-popup.min.js' %}"></script>
+   <script src="{% static 'user_auth/assets/js/nouislider.min.js' %}"></script>
+   <!-- Main JS File -->
+   <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+
+
+</html>

@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+
+<!-- molla/index-10.html  22 Nov 2019 09:58:04 GMT -->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>SOLO for FOOT</title>
+    <meta name="keywords" content="HTML5 Template">
+    <meta name="description" content="Molla - Bootstrap eCommerce Template">
+    <meta name="author" content="p-themes">
+    
+    <!-- Plugins CSS File -->
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/plugins/owl-carousel/owl.carousel.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/plugins/magnific-popup/magnific-popup.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/plugins/jquery.countdown.css' %}">
+    
+    <!-- Main CSS File -->
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/skins/skin-demo-10.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/css/demos/demo-10.css' %}">
+
+
+    
+</head>
+
+<body>
+    <div class="page-wrapper">
+    <header class="header header-8">  
+
+    <div class="header-middle sticky-header">
+        <div class="container">
+            <div class="header-left">
+                
+
+                    <img src="{% static 'user_auth/assets/images/demos/demo-10/solo.png' %}"  width="105" height="25">
+            </div><!-- End .header-left -->
+
+            <div class="header-right">
+                <nav class="main-nav">
+                    <ul class="menu sf-arrows">
+                        <li class="megamenu-container active">
+                            <a href="{% url 'user_authentication:home' %}" class="sf-with-ul">Home</a>
+
+                            
+                        </li>
+                        <li>
+                            <a href="{% url 'store:shop' %}" class="sf-with-ul">Shop</a>
+
+                            <!-- <div class="megamenu megamenu-md">
+                                <div class="row no-gutters">
+                                    <div class="col-md-8">
+                                        <div class="menu-col">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="menu-title"><a href="{% url 'store:shop' %}">For ALL</a></div>
+                                                    <div class="menu-title">Product Category</div>
+                                                    <ul>
+                                                        <li><a href="{% url 'store:shop_category' category='men' %}">For MEN</a></li>
+                                                        <li><a href="{% url 'store:shop_category' category='women' %}">For WOMEN</a></li>
+                                                    </ul>   
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                                    
+                                </div>
+                            </div> -->
+                        </li>
+                        <li>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'store:wishlist' %}" class="sf-with-ul"><i class="icon-heart-o"></i>WISHLIST</a>   
+                            {% endif %}                          
+                        </li>
+                        
+                        
+                        <li>{% if user.is_authenticated %}
+                            <a href="{% url 'user_authentication:signout' %}" class="sf-with-ul">LOGOUT</a>
+                            {% else %}
+                            <a href="{% url 'user_authentication:login' %}" class="sf-with-ul">LOGIN | REGISTER</a> 
+                            {% endif %}                          
+                        </li>
+                        <li>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'user_profile:profile' %}">PROFILE-{{ request.user }}</a>
+                            {% endif %}                 
+                        </li>
+                    </ul><!-- End .menu -->
+                </nav><!-- End .main-nav -->
+
+                <div class="header-search">
+                    <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
+                    <form action="#" method="get">
+                        <div class="header-search-wrapper">
+                            <label for="q" class="sr-only">Search</label>
+                            <input type="search" class="form-control" name="q" id="q" placeholder="Search in..." required>
+                        </div><!-- End .header-search-wrapper -->
+                    </form>
+                </div><!-- End .header-search -->
+                {% if user.is_authenticated %}
+                <div class="dropdown cart-dropdown">
+                    <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
+                        <i class="icon-shopping-cart"></i>
+                        </a>
+
+                    <div class="dropdown-menu dropdown-menu-right">                     
+                        <div class="dropdown-cart-action">
+                            <a href="{% url 'carts:carts' %}" class="btn btn-primary">View Cart</a>
+                            <a href="{% url 'carts:checkout' %}" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
+                        </div><!-- End .dropdown-cart-total -->
+                    </div><!-- End .dropdown-menu -->
+                </div><!-- End .cart-dropdown -->
+                {% endif %}
+            </div><!-- End .header-right -->
+        </div><!-- End .container -->
+    </div><!-- End .header-middle -->
+</header>
