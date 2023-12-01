@@ -144,30 +144,6 @@ def update_cart(request):
     return redirect('carts:carts')
 
 
-# def carts(request, total=0, quantity=0):
-#     try:
-#         if request.user.is_authenticated:
-#             cart_instance = Cart.objects.get(user=request.user)
-#             cart_items = CartItem.objects.filter(order=cart_instance)
-#         # else:
-#         #     cart = Cart.objects.get(shopping_cart__session_key=_cart_id(request))
-#         #     cart_items = CartItem.objects.filter(order=cart)
-
-#         for cart_item in cart_items:
-#             total += (cart_item.product.price * cart_item.quantity)
-#             quantity += cart_item.quantity
-
-#     except ObjectDoesNotExist:
-#         cart_items = []
-
-#     context = {
-#         'total': total,
-#         'quantity': quantity,
-#         'cart_items': cart_items,
-#     }
-
-#     return render(request, 'carts/cart.html', context)
-
 
 from decimal import Decimal
 
@@ -232,8 +208,32 @@ def checkout(request):
         total = 0
         quantity = 0
         for cart_item in cart_items:
-            total += (cart_item.product.price * cart_item.quantity)
-            quantity += cart_item.quantity
+                cart_item.offer = Offer.objects.filter(product=cart_item.product).first()
+                product_category = cart_item.product.category  
+                cart_item.product.category.offer = OfferCategory.objects.filter(category=product_category).first()
+                
+                if cart_item.offer and cart_item.product.category.offer:
+                    discount_percentage = max(cart_item.offer.discount_percentage, cart_item.product.category.offer.discount_percentage)
+                elif cart_item.product.category.offer:
+                    discount_percentage = cart_item.product.category.offer.discount_percentage
+                elif cart_item.offer:
+                    discount_percentage = cart_item.offer.discount_percentage
+                else:
+                    discount_percentage = 0
+                
+                if discount_percentage > 0:
+                    discount_factor = Decimal(discount_percentage) / Decimal(100)
+                    cart_item.discounted_price = cart_item.product.price - (cart_item.product.price * discount_factor)
+                else:
+                    cart_item.discounted_price = None
+                
+                # Update total and quantity
+                if cart_item.discounted_price is not None:
+                    total += cart_item.discounted_price * cart_item.quantity
+                else:
+                    total += cart_item.product.price * cart_item.quantity
+                    
+                quantity += cart_item.quantity
 
         if request.method == 'POST':
             # Check if the form is for a new address

@@ -125,7 +125,7 @@
 												<td>Subtotal:</td>
 												<td id="subtotal">
 
-													{{ '₹ ' }}{{ cart_items.order.get_cart_total }}
+													{{ '₹ ' }}{{ total }}
 													
 
 												</td>
@@ -172,7 +172,7 @@
 												
 												<tr class="summary-total">
 												<td>Grand Total:</td>
-												<td id="grand-total">{{ '₹ ' }}{{ cart_items.order.0.get_cart_total }}</td>
+												<td id="grand-total">{{ '₹ ' }}{{ total }}</td>
 												</tr><!-- End .summary-total -->
 												</tbody>
 												</table><!-- End .table table-summary -->

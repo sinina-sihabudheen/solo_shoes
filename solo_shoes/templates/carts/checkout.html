@@ -52,7 +52,12 @@
 													{% for cart_item in cart_items %}
 														<tr>
 															<td><a href="#">{{ cart_item.product.product_name }}</a></td>
-															<td>{{ cart_item.product.price }}</td>
+															<td>{% if cart_item.discounted_price is not None %}
+																{{ '₹ ' }}{{ cart_item.discounted_price|floatformat:2 }}
+															{% else %}
+																{{ '₹ ' }}{{ cart_item.product.price|floatformat:2 }}
+															{% endif %}
+														</td>
 														</tr>
 													{% endfor %}
 	

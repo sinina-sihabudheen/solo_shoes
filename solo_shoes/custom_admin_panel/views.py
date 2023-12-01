@@ -232,19 +232,31 @@ def product_list(request):
 
     for product in products:
         product.offer = Offer.objects.filter(product=product).first()
-        if product.offer:
-                
+        
+        product.category.offer = OfferCategory.objects.filter(category=product.category).first()
+        if product.offer and product.category.offer:
+            if product.offer.discount_percentage > product.category.offer.discount_percentage:
                 discount_percentage = Decimal(product.offer.discount_percentage) / Decimal(100)
                 product.discounted_price = product.price - (product.price * discount_percentage)
+            else:
+                discount_percentage = Decimal(product.category.offer.discount_percentage) / Decimal(100)
+                product.discounted_price = product.price - (product.price * discount_percentage)
+        elif product.category.offer:
+            discount_percentage = Decimal(product.category.offer.discount_percentage) / Decimal(100)
+            product.discounted_price = product.price - (product.price * discount_percentage)
+        elif product.offer:
+            discount_percentage = Decimal(product.offer.discount_percentage) / Decimal(100)
+            product.discounted_price = product.price - (product.price * discount_percentage)
                 
         else:
-                product.discounted_price = None
+            product.discounted_price = None
     context = {
         'products' : products,
         
     }
 
     return render(request, 'custom_admin_panel/product_list.html', context)
+
 
 def block_product(request, product_id):
     product = Product.objects.get(pk=product_id)
