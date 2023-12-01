@@ -46,6 +46,25 @@ def admin_login(request):
     return render(request,'custom_admin_panel/adminlogin.html')
 
 
+# @login_required
+# def dashboard(request):
+#     if request.user.is_authenticated and request.user.is_superuser:
+#         user = User.objects.all()
+#         query = request.GET.get('text')
+
+#         if query:
+#             emp = emp.filter(Q(first_name_icontains=query) | Q(emailicontains=query) | Q(username_icontains=query))
+
+
+
+#         context = {
+#             'user':user,
+            
+#         }
+
+#         return render(request,'custom_admin_panel/dashboard.html',context)
+#     return redirect('custom_admin_panel:adminlogin')
+
 @login_required
 def dashboard(request):
     if request.user.is_authenticated and request.user.is_superuser:
@@ -54,76 +73,53 @@ def dashboard(request):
 
         if query:
             emp = emp.filter(Q(first_name_icontains=query) | Q(emailicontains=query) | Q(username_icontains=query))
+        all_orders = Order.objects.all()
+        
+        all_order_items = OrderItem.objects.filter(delivery_status='D')
+        
 
+        
+        filter_type = request.GET.get('filter_type', 'all')  
+
+    
+        if filter_type == 'day':
+            start_date = datetime.now() - timedelta(days=1)
+        elif filter_type == 'week':
+            start_date = datetime.now() - timedelta(weeks=1)
+        elif filter_type == 'month':
+            start_date = datetime.now() - timedelta(weeks=4)  
+        elif filter_type == 'year':
+            start_date = datetime.now() - timedelta(weeks=52)  
+        else:
+            start_date = None  
+        
+        if start_date:
+            all_orders = all_orders.filter(date_ordered__gte=start_date)
+
+    
+        total_revenue = sum(order.get_cart_total for order in all_orders)
+        total_sales = sum(order.get_cart_items for order in all_orders)
+                     
+        cod_orders = all_orders.filter(payment_method='COD')
+        cod_count = cod_orders.count()    
+        cod_total = sum(order.get_cart_total for order in cod_orders)       
 
 
         context = {
             'user':user,
-            
+            'total_revenue': total_revenue,
+            'total_sales' : total_sales,        
+            'all_orders':all_orders,
+            'all_order_items':all_order_items,
+            'cod_count': cod_count,            
+            'cod_total': cod_total,        
+            'filter_type': filter_type,  
         }
 
         return render(request,'custom_admin_panel/dashboard.html',context)
     return redirect('custom_admin_panel:adminlogin')
 
-# hello
 
-def admin_dash(request):
-    all_orders = Order.objects.all()
-    # all_variations = ProductLanguageVariation.objects.all()
-    all_order_items = OrderItem.objects.all()
-    
-    filter_type = request.GET.get('filter_type', 'all')  
-
- 
-    if filter_type == 'day':
-        start_date = datetime.now() - timedelta(days=1)
-    elif filter_type == 'week':
-        start_date = datetime.now() - timedelta(weeks=1)
-    elif filter_type == 'month':
-        start_date = datetime.now() - timedelta(weeks=4)  
-    elif filter_type == 'year':
-        start_date = datetime.now() - timedelta(weeks=52)  
-    else:
-        start_date = None  
-    
-    if start_date:
-        all_orders = all_orders.filter(date_ordered__gte=start_date)
-
-   
-    total_revenue = sum(order.get_cart_total for order in all_orders)
-    total_sales = sum(order.get_cart_items for order in all_orders)
-    total_stock = sum(variation.stock for variation in all_variations)
-    
-    
-    cod_orders = all_orders.filter(payment_method='COD')
-    online_orders = all_orders.filter(payment_method='RAZ') 
-    wallet_orders = all_orders.filter(payment_method='WAL')
-
-    cod_count = cod_orders.count()
-    online_count = online_orders.count()
-    wallet_count = wallet_orders.count()
-
-    cod_total = sum(order.get_cart_total for order in cod_orders)
-    online_total = sum(order.get_cart_total for order in online_orders)
-    wallet_total = sum(order.get_cart_total for order in wallet_orders)
-
-    
-    context = {
-        'total_revenue': total_revenue,
-        'total_sales' : total_sales,
-        'total_stock':total_stock,
-        'all_orders':all_orders,
-        'all_order_items':all_order_items,
-        'cod_count': cod_count,
-        'online_count': online_count,
-        'wallet_count': wallet_count,
-        'cod_total': cod_total,
-        'online_total': online_total,
-        'wallet_total': wallet_total,
-        'filter_type': filter_type,  
-
-    }
-    return render(request, 'admin_panel/admin_dash.html', context)
 
 def block_user(request, user_id):
     user = User.objects.get(pk=user_id)
