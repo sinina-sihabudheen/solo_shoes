@@ -63,7 +63,9 @@
                                             {% endif %}
                                         </td>
                                         <td>{% if product.offer %}
-                                            <a href="{% url 'custom_admin_panel:offer' %}">{{ product.offer.offer_name }}</a>
+                                            <a href="{% url 'custom_admin_panel:offer' %}">product:{{ product.offer.offer_name }}</a>
+                                            {% elif product.category.offer %}
+                                            <a href="{% url 'custom_admin_panel:offer' %}">category:{{ product.category.offer.category_offer_name }}</a>
                                             {% else %}
                                             Null
                                             {% endif %}

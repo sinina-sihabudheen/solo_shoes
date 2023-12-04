@@ -83,7 +83,7 @@
                 <div class="invoice-center">
                     <div class="address">
                         <p><strong>Invoice Number:</strong> #{{ invoice_number }}</p>
-                        <p><strong>Invoice Date:</strong> {{ order.date_ordered }}</p>
+                        <p><strong>Invoice Date:</strong> {{ order.date_added }}</p>
                     </div>
                     <div class="address">
                         <h4>Invoice To</h4>
@@ -98,11 +98,11 @@
                     <div class="address">
                         <h4>Bill To</h4>
                         <p>
-                            <strong class="text-brand">{{ order.customer.username }}</strong><br>
+                            <strong class="text-brand">{{ order.user.username }}</strong><br>
                             {{ order.shipping_address.address_lines }}<br>
                             {{ order.shipping_address.city }}, {{ order.shipping_address.state }}, {{ order.shipping_address.country }}<br>
                             <abbr title="Phone">Phone:</abbr> {{ order.shipping_address.mobile }}<br>
-                            <abbr title="Email">Email:</abbr> {{ order.customer.email }}
+                            <abbr title="Email">Email:</abbr> {{ order.user.email }}
                         </p>
                     </div>
                     <div class="table-responsive">
@@ -117,12 +117,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for order_item in order.orderitem_set.all %}
+                                {% for order_item in order.cartitem_set.all %}
                                 <tr>
-                                    <td>{{ order_item.product.name }}<br><small>SKU: FWM15VKT</small></td>
-                                    <td>${{ order_item.product.price }}</td>
+                                    <td>{{ order_item.product.product_name }}<br></td>
+                                    <td>{{ order_item.product.price }}</td>
                                     <td>{{ order_item.quantity }}</td>
-                                    <td>${{ order_item.get_total }}</td>
+                                    <td>{{ order_item.get_total }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -134,7 +134,7 @@
                         <h4>Payment Method</h4>
                         <p>{{ order.payment_method }}</p>
                     </div>
-                    <div class="total-amount">Total Amount: ${{ order.get_cart_total }}</div>
+                    <div class="total-amount">Total Amount: {{ order.get_cart_total }}</div>
                     <div class="note">
                         <strong>Note:</strong> This is a computer-generated receipt and does not require a physical signature.
                     </div>

@@ -7,7 +7,7 @@ from custom_admin_panel.models import Product
 class ShippingAddress(models.Model):
     id = models.AutoField(primary_key=True)
 
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
     address_lines = models.TextField(null=True, blank=True)
     city = models.CharField(max_length=255, null=True, blank=True)
@@ -22,7 +22,7 @@ class ShippingAddress(models.Model):
 
 
 class Order(models.Model):
-    customer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)    
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)    
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False,null=True,blank=False)
     transaction_id = models.CharField(max_length=200, null=True)
@@ -31,9 +31,9 @@ class Order(models.Model):
         ('RAZ', 'Paid With Razorpay'),       
     )
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES,  null=True, blank=True)
-    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
     order_notes = models.CharField(max_length=255, blank=True, null=True)  # Add this field
     
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
      
    
     def _str_(self):
@@ -70,7 +70,35 @@ class OrderItem(models.Model):
     delivery_status = models.CharField(max_length=3, choices=ORDER_STATUS_CHOICES, default='PL')
 
     
+    # @property
+    # def get_total(self):
+    #     total = self.product.price * self.quantity
+    #     return total
     @property
     def get_total(self):
-        total = self.product.price * self.quantity
-        return total
+        product = self.product
+        order = self.order
+
+        # Get applicable offers for the product and category
+        product_offer = product.offer
+        category_offer = product.category.offer if product.category else None
+
+        # Choose the offer with the maximum discount percentage
+        if product_offer and category_offer:
+            max_discount_percentage = max(product_offer.discount_percentage, category_offer.discount_percentage)
+        elif product_offer:
+            max_discount_percentage = product_offer.discount_percentage
+        elif category_offer:
+            max_discount_percentage = category_offer.discount_percentage
+        else:
+            max_discount_percentage = 0  # No offer applied
+
+        # Calculate discounted price
+        if max_discount_percentage > 0:
+            discounted_price = product.price - (product.price * max_discount_percentage / 100)
+        else:
+            discounted_price = product.price
+
+        # Update the product price in the order
+        order_item_price = discounted_price * self.quantity
+        return order_item_price

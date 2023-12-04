@@ -1,0 +1,83 @@
+
+{% load static %}
+
+<!-- header -->
+{% include 'user_authentication/inc/navbar.html' %}
+<!-- end-header -->
+
+{% block content %}
+<h4>ADD NEW ADDRESS</h4>
+<div >
+    <form action="{% url 'carts:add_address' %}" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-lg-9">
+                <h2 class="checkout-title">Address Details</h2><!-- End .checkout-title -->
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Full Name *</label>
+                            <input type="text" class="form-control" name="full_name" required>
+                        </div><!-- End .col-sm-6 -->								
+                        
+                    </div><!-- End .row -->
+                                            
+                                                    
+                    <label>Address lines *</label>
+                    <input type="text" class="form-control" name="address_lines" required>
+                    
+                    <label>Country *</label>
+                    <input type="text" class="form-control" name="country" required>
+                    
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Town / City *</label>
+                            <input type="text" class="form-control" name="city" required>
+                        </div><!-- End .col-sm-6 -->
+        
+                        <div class="col-sm-6">
+                            <label>State *</label>
+                            <input type="text" class="form-control" name="state" required>
+                        </div><!-- End .col-sm-6 -->
+                    </div><!-- End .row -->
+        
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label>Postcode *</label>
+                            <input type="text" class="form-control" name="pin_code" required>
+                        </div><!-- End .col-sm-6 -->
+        
+                        <div class="col-sm-6">
+                            <label>Phone *</label>
+                            <input type="tel" class="form-control" name="mobile" required>
+                        </div><!-- End .col-sm-6 -->
+                    </div><!-- End .row -->
+        <!-- Add form fields for the new address here -->
+        <button type="submit" class="btn btn-primary">Save Address</button>
+    </form>
+</div>
+
+
+
+{% endblock %}
+
+
+{% include 'user_authentication/inc/footer.html' %}
+<!-- End .footer -->
+
+</div>
+<!-- End .page-wrapper -->
+<button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+<!-- Plugins JS File -->
+<script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+<!-- Main JS File -->
+<script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+<!-- molla/dashboard.html  22 Nov 2019 10:03:13 GMT -->
+</html>

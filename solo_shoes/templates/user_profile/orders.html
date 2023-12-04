@@ -3,45 +3,81 @@
 
         <!-- header -->
         {% include 'user_authentication/inc/navbar.html' %}
-        <!-- end-header -->
 
-{% block content %}
-    <div class="container">
-        <div class="page-header text-center">
-            <h1 class="page-title">My Orders</h1>
+
+<div class="container">
+    <h2>My Orders</h2>
+    {% if order %}
+    {% for order in order %}
+    <div class="card mb-3 p-5 " style="border-radius: 7px; background:#f3f3f9;">
+        <div class="card-header">
+            <div class="d-flex justify-content-between mb-2">
+                <div>
+                    <p style="font-size: 16px;">Ordered on</p>
+                    <p style="font-size: 18px;"><b>{{ order.date_added }}</b></p>
+                </div>
+                <div>
+                    <a href="{% url 'user_profile:generate_invoice' order.id %}" target="_blank" download>Download Invoice</a>
+
+                </div>
+            </div>
         </div>
-        {% if orders %}
-            <ul>
-                {% for order in orders %}
-                    <li>
+        <hr class="m-0 mb-1">
+        <div class="row col-12 d-flex mb-0 p-5 ">
+            {% for order_item in order.cartitem_set.all %}
+            <div class="mb-5">
+                <div class="col-md-3 col-12 bg-white d-flex align-items-center" style="border-radius: 6px;">
+                    <img class="" src="{{ order_item.product.productimage_set.first.image.url }}"
+                        alt="{{ order_item.product.name }}">
+                </div>
+                <div class="col-9 pl-5 mt-2">
+                    <h5 class="card-title">{{ order_item.product.product_name }}</h5>
                     
-                        <br><strong>Order Date:</strong> {{ order.date_added }}<br>
-                        <strong>Item</strong> {{ order.product.product_name }}<br>
-                        <strong>Order Status</strong> {{ order.delivery_status }}
-                        <img src="{{ order.product.productimage_set.first.image.url }}" alt="product image" style="width: 150px;">
+                    <p class="card-text">
+                        Quantity: <b>{{ order_item.quantity }}</b><br>
+                        <i class="fa-solid fa-file-invoice-dollar"></i> {{ order.payment_method }}
+                    </p>
 
-                        <!-- <a href="{% url 'user_profile:cancel_order' order.id %}"  class="mt-1  btn btn-outline-danger delete-address-btn">
-                            <span>Cancel order</span>
-                            <i class="icon-trash"></i>
-                        </a> -->
-                        {% if order.delivery_status != 'CN' %}
-                        <a href="{% url 'user_profile:cancel_order' order.id %}" class="mt-1  btn btn-outline-danger delete-address-btn">
-                             <span>Cancel order</span>
-                             <i class="icon-trash"></i>
-                        </a>
-                        {% else %}
-                             <span class="mt-1 label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
-                        {% endif %}
-                        <a href="{% url 'user_profile:generate_invoice' order.id %}" target="_blank" download>Download Invoice</a>
+                    <h5 class="card-title mb-2">₹ {{ order_item.get_total }} </h5>
+                    <!-- <div class="card-footer row "
+                        style="background: #F3F3F9; display: flex; justify-content: space-between; align-items: center; width: 100%;">                   
+                    </div> -->
+                </div>
+                <div class="mb-3">{% if order_item.delivery_status == 'CN' %}
+                    <span class="mt-1 label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
+                    {% elif order_item.delivery_status == 'D' %}
+                    <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
+        
+                    {% else %}
+                    <a href="{% url 'user_profile:cancel_order' cart_id=order_item.id %}" >Cancel Order</a>
+                    {% endif %}
+                </div>
+                <div class="card-footer row "
+                        style="background: #F3F3F9; display: flex; justify-content: space-between; align-items: center; width: 100%;">                   
+                    </div>
+            </div>
 
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No orders found.</p>
-        {% endif %}
+            {% endfor %}
+
+        </div>
+        <div class="col-12 row d-flex justify-content-between ">
+            <h6 class="mx-5">Delivery to : <b>{{ order.shipping_address.full_name }},{{ order.shipping_address.address_lines }}</b></h6>
+            <h5 class="mx-5">Total : <b>₹{{ order.get_cart_total }}</b></h5>
+        </div>
+        
     </div>
-{% endblock %}
+    {% endfor %}
+
+</div>
+<br>
+{% else %}
+<h1>No orders found.</h1>
+{% endif %}
+</div>
+
+
+
+
 
 {% include 'user_authentication/inc/footer.html' %}
 <!-- End .footer -->

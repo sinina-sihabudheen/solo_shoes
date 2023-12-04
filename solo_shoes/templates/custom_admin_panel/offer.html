@@ -14,7 +14,7 @@
             <thead>
                     <tr>
                         <th>Offer Name</th>
-                        <th>Discount_percentage</th>
+                        <th>Discount_percentage %</th>
                         <th>start_Date</th>
                         <th>End_Date</th>
                         <th>Is_Active</th>
@@ -27,7 +27,7 @@
                 <tr>
             
                 <td>{{ offer.category_offer_name }}</td>
-                <td>{{ offer.discount_percentage }}</td>
+                <td>{{ offer.discount_percentage|floatformat:.2 }}</td>
                 <td>{{ offer.date_start }}</td>
                 <td>{{ offer.date_end }}</td>
                 <td>{{ offer.active }}</td>
@@ -47,7 +47,7 @@
             <thead>
                 <tr>
                     <th>Offer Name</th>
-                    <th>Discount_percentage</th>
+                    <th>Discount_percentage %</th>
                     <th>start_Date</th>
                     <th>End_Date</th>
                     <th>Is_Active</th>
@@ -60,7 +60,7 @@
                 <tr>
                 
                 <td>{{ offer.offer_name }}</td>
-                <td>{{ offer.discount_percentage }}</td>
+                <td>{{ offer.discount_percentage|floatformat:.2 }}</td>
                 <td>{{ offer.date_start }}</td>
                 <td>{{ offer.date_end }}</td>
                 <td>{{ offer.active }}</td>

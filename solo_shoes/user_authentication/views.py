@@ -18,8 +18,13 @@ from store.models import Offer, OfferCategory
 def home(request):
       products = Product.objects.all()
       for product in products:
-        product.offer = Offer.objects.filter(product=product).first()
-        product.category.offer = OfferCategory.objects.filter(category=product.category).first()
+        now = timezone.now()
+        
+        product.offer = Offer.objects.filter(
+        Q(product=product) & Q(date_start__lte=now, date_end__gt=now)).first()
+
+        product.category.offer = OfferCategory.objects.filter(
+        Q(category=product.category) & Q(date_start__lte=now, date_end__gt=now)).first()
         
         if product.offer and product.category.offer:
             if product.offer.discount_percentage > product.category.offer.discount_percentage:
@@ -38,7 +43,8 @@ def home(request):
         else:
             product.discounted_price = None
       context = {
-          'products' : products
+          'products' : products,
+
       }
       return render(request, 'user_authentication/index.html' , context)
 

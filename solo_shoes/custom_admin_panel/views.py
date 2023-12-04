@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
-from django.db.models import Q 
+from django.db.models import Q, F, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from decimal import Decimal
-
+from datetime import datetime, timezone
+from django.utils import timezone
+from carts.models import Cart, CartItem
 from store.models import Offer, OfferCategory
 from .models import Category, Product, ProductImage
 from django.contrib.auth.decorators import login_required
@@ -10,11 +12,16 @@ from django.contrib.auth.models import User
 from django.views.decorators.cache import never_cache
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
-from django.forms import formset_factory
+
 from .forms import ProductForm, CategoryForm, ProductImageFormSet
-from django.db.models import Q
-from carts.models import Cart, CartItem
-from user_profile.models import Order, OrderItem
+from django.http import HttpResponse, JsonResponse
+from django.views import View
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.views.decorators.http import require_GET
+from django.db.models.functions import TruncWeek, TruncMonth, TruncDay
+
+
 from user_profile.forms import OrderForm
 from .forms import OfferForm,OfferCategoryForm
 
@@ -74,11 +81,11 @@ def dashboard(request):
         if query:
             emp = emp.filter(Q(first_name_icontains=query) | Q(emailicontains=query) | Q(username_icontains=query))
         
-        all_orders = Order.objects.all()
+        all_orders = Cart.objects.all()
 
-        order_delivered = OrderItem.objects.filter(delivery_status='D')
+        order_delivered = CartItem.objects.filter(delivery_status='D')
         
-        all_order_items = OrderItem.objects.all()
+        all_order_items = CartItem.objects.all()
         
 
         
@@ -97,7 +104,7 @@ def dashboard(request):
             start_date = None  
         
         if start_date:
-            all_orders = all_orders.filter(date_ordered__gte=start_date)
+            all_orders = all_orders.filter(date_added__gte=start_date)
 
         
         total_revenue = sum(order.get_cart_total for order in all_orders)
@@ -106,8 +113,8 @@ def dashboard(request):
         cod_orders = all_orders.filter(payment_method='COD')
         cod_count = cod_orders.count()    
         cod_total = sum(order.get_cart_total for order in cod_orders)
-         
-
+        # products = Product.objects.all() 
+        # total_stock = sum()
 
         context = {
             'user':user,
@@ -313,8 +320,9 @@ def edit_product(request, product_id):
 #Order Management...
 
 def order(request):
-    orders = Order.objects.all()
-    order_items = OrderItem.objects.all()
+    orders = Cart.objects.all()
+    order_items = CartItem.objects.all()
+    
 
     context = {
         'order_items': order_items,
@@ -325,7 +333,7 @@ def order(request):
 
 def order_edit(request, order_item_id):
     
-    order_item = get_object_or_404(OrderItem, id=order_item_id)
+    order_item = get_object_or_404(CartItem, id=order_item_id)
 
     if request.method == 'POST':
         form = OrderForm(request.POST, instance=order_item)
@@ -343,7 +351,7 @@ def order_edit(request, order_item_id):
     return render(request, 'custom_admin_panel/order_form.html', context)
 
 def cancel_order(request, order_item_id):
-    order = get_object_or_404(OrderItem, id=order_item_id)
+    order = get_object_or_404(CartItem, id=order_item_id)
     order.delivery_status = 'CN'
     order.save() 
     messages.success(request, 'Your order is successfully cancelled... ')
@@ -361,66 +369,200 @@ def manage_offers_view(request):
     return render(request, 'custom_admin_panel/offer.html', context)
 
 def category_off_add(request):
-    
     if request.method == 'POST':
         form = OfferCategoryForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            offer_category = form.save(commit=False)
+            
+
+            now = datetime.now(timezone.get_current_timezone())
+            print("Now:", now)
+            print("Start Date:", offer_category.date_start)
+            print("End Date:", offer_category.date_end)
+            if offer_category.date_start <= now < offer_category.date_end:
+                offer_category.active = True
+            else:
+                offer_category.active = False
+
+            print("Active:", offer_category.active)
+
+            offer_category.save()
+
             return redirect('custom_admin_panel:offer')
     else:
         form = OfferCategoryForm()
-    
+
     return render(request, 'custom_admin_panel/category_offer.html', {'form': form})
 
-def category_off_edit(request,category_id):
-    category = get_object_or_404(Category, pk=category_id)
+
+
+
+def category_off_edit(request, offer_id):
+    offer = get_object_or_404(OfferCategory, pk=offer_id)
 
     if request.method == 'POST':
-        form = OfferCategoryForm(request.POST, request.FILES, instance=category)
+        form = OfferCategoryForm(request.POST, request.FILES, instance=offer)
         if form.is_valid():
-            form.save()
+            offer_category = form.save(commit=False)
+            now = timezone.now()
+            if offer_category.date_start <= now < offer_category.date_end:
+                offer_category.active = True
+            else:
+                offer_category.active = False
+
+            offer_category.save()
+
             return redirect('custom_admin_panel:offer')
     else:
-        form = OfferCategoryForm(instance=category)
-    
-    context = {
-            'form': form,
-            'category': category
+        form = OfferCategoryForm(instance=offer)
 
+    context = {
+        'form': form,
+        'offer': offer,
     }
-    
+
     return render(request, 'custom_admin_panel/category_offer.html', context)
 
-def product_off_add(request):
-    
 
+def product_off_add(request):
     if request.method == 'POST':
         form = OfferForm(request.POST or None)
 
         if form.is_valid():
-            product = form.save()
-        
+            offer = form.save(commit=False)
+
+            now = timezone.now()
+            if offer.date_start <= now < offer.date_end:
+                offer.active = True
+            else:
+                offer.active = False
+
+            offer.save()
             return redirect('custom_admin_panel:offer')
     else:
         form = OfferForm()
 
     return render(request, 'custom_admin_panel/product_offer.html', {'form': form})
-def product_off_edit(request,product_id):
 
-    product = get_object_or_404(Product, pk=product_id)
-    form = OfferForm(instance=product)
-    
+def product_off_edit(request, offer_id):
+    offer = get_object_or_404(Offer, pk=offer_id)
+    form = OfferForm(instance=offer)
+
     if request.method == 'POST':
-        form = OfferForm(request.POST, request.FILES, instance=product)
+        form = OfferForm(request.POST, request.FILES, instance=offer)
 
         if form.is_valid():
+            offer = form.save(commit=False)
+
+            now = timezone.now()
+            
+            if offer.date_start <= now < offer.date_end:
+                offer.active = True
+            else:
+                offer.active = False
             form.save()
             return redirect('custom_admin_panel:offer')
+    
+    context = {
+        'form': form,
+        'offer': offer,
+    }
 
-    return render(request, 'custom_admin_panel/product_offer.html', {'form': form, 'product': product})
+    return render(request, 'custom_admin_panel/product_offer.html', context)
 
 
+def sales_report(request):
+    delivered_order_items = CartItem.objects.filter(delivery_status='D')
+    print(delivered_order_items)
+    most_sold_products = (
+        delivered_order_items.values('product__product_name')
+        .annotate(total_sold=Sum('quantity'))
+        .order_by('-total_sold')[:6]
+    )
+    print('MOST SOLDLllllll',most_sold_products)
+    return render(request,'custom_admin_panel/sales_report.html', { 'most_sold_products':most_sold_products })
 
+@require_GET
+def get_sales_data(request, period):
+    print("getting inside inside weew")
+    # Your logic to filter and aggregate data based on the selected period
+    # Example: Weekly sales
+    if period == 'week':
+        print("getting inside week")
+        start_date = timezone.now().date() - timezone.timedelta(days=6)
+        order_items = CartItem.objects.filter(order__date_added__gte=start_date)
+        data = (
+            order_items.annotate(day=TruncDay('order__date_added'))
+            .values('day')
+            .annotate(total=Sum(F('quantity') * F('product__price')))
+            .order_by('day')
+        )
+        labels = [item['day'].strftime('%A') for item in data]
+        # Example: Monthly sales
+    elif period == 'month':
+        print("Entering into the month")
+        start_date = timezone.now().date() - timezone.timedelta(days=30)
+        order_items = CartItem.objects.filter(order__date_added__gte=start_date)
+        data = (
+        order_items.annotate(day=TruncDay('order__date_added'))
+        .values('day')
+        .annotate(total=Sum(F('quantity') * F('product__price')))
+        .order_by('day')
+    )
+        labels = [item['day'].strftime('%Y-%m-%d') for item in data]
+    # Example: Yearly sales
+    elif period == 'year':
+        print("Entering into the year")
+        start_date = timezone.now().date() - timezone.timedelta(days=365)
+        order_items = CartItem.objects.filter(order__date_added__gte=start_date)
+        data = (
+            order_items.annotate(month=TruncMonth('order__date_added'))
+            .values('month')
+            .annotate(total=Sum(F('quantity') * F('product__price')))
+            .order_by('month')
+        )
+        labels = [f"{item['month'].strftime('%B')}" for item in data]
+    else:
+        return JsonResponse({'error': 'Invalid period'})
+
+    
+    
+    sales_data = [item['total'] for item in data]
+
+    return JsonResponse({'labels': labels, 'data': sales_data})
+
+
+def sales_report_pdf_view(request):
+    # Fetch sales data for the current week as an example
+    start_date = datetime.now() - timedelta(days=datetime.now().weekday())
+    end_date = start_date + timedelta(days=6)
+    
+    weekly_sales = CartItem.objects.filter(
+        order__date_added__range=[start_date, end_date]
+    ).aggregate(total_sales=Sum('quantity'))
+
+    # Fetch category-wise sales data
+    category_sales = Category.objects.annotate(total_sales=Sum('products__cartitem__quantity'))
+
+    context = {
+        'weekly_sales': weekly_sales['total_sales'] or 0,
+        'category_sales': category_sales,
+    }
+
+    # Generate PDF
+    template_path = 'custom_admin_panel/sales_report_pdf_template.html'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # Create PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
+    pisa_status = pisa.CreatePDF(html, dest=response)
+
+    # Return PDF
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
 
 
 

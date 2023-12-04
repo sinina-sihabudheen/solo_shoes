@@ -1,3 +1,4 @@
+from django.utils import timezone
 from decimal import Decimal
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -6,6 +7,8 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from carts.models import Whishlist
 from django.contrib import messages
+from django.db.models import Q
+from django.core.paginator import EmptyPage,PageNotAnInteger,Paginator
 
 from store.models import Offer,OfferCategory
 
@@ -14,15 +17,28 @@ from store.models import Offer,OfferCategory
 def shop(request, category=None):
     if category:
         products = Product.objects.filter(category__category_name__iexact=category, is_available=True)
+        paginator = Paginator(products,3)
+        page = request.GET.get('page')
+        paged_products = paginator.get_page(page)
     else:
         products = Product.objects.filter(is_available=True)
+        paginator = Paginator(products,6)
+        page = request.GET.get('page')
+        paged_products = paginator.get_page(page)
     
     for product in products:
-        product.offer = Offer.objects.filter(product=product).first()
-        product.category.offer = OfferCategory.objects.filter(category=product.category).first()
+        now = timezone.now()
         
+        product.offer = Offer.objects.filter(
+        Q(product=product) & Q(date_start__lte=now, date_end__gt=now)).first()
+
+        product.category.offer = OfferCategory.objects.filter(
+        Q(category=product.category) & Q(date_start__lte=now, date_end__gt=now)).first()
+        
+
         if product.offer and product.category.offer:
             if product.offer.discount_percentage > product.category.offer.discount_percentage:
+                
                 discount_percentage = Decimal(product.offer.discount_percentage) / Decimal(100)
                 product.discounted_price = product.price - (product.price * discount_percentage)
             else:
@@ -40,7 +56,7 @@ def shop(request, category=None):
     
          
     context = {
-        'products': products,
+        'products': paged_products,
         'category': category,
     }
     return render(request, 'store/shop.html', context)
@@ -52,8 +68,13 @@ def shop(request, category=None):
 def product(request,product_id):
     product = get_object_or_404(Product, pk=product_id)
     category = product.category
-    product.offer = Offer.objects.filter(product=product).first()
-    product.category.offer = OfferCategory.objects.filter(category=product.category).first()
+    now = timezone.now()
+        
+    product.offer = Offer.objects.filter(
+        Q(product=product) & Q(date_start__lte=now, date_end__gt=now)).first()
+
+    product.category.offer = OfferCategory.objects.filter(
+        Q(category=product.category) & Q(date_start__lte=now, date_end__gt=now)).first()
         
     if product.offer and product.category.offer:
         if product.offer.discount_percentage > product.category.offer.discount_percentage:
@@ -74,8 +95,13 @@ def product(request,product_id):
     related_products = Product.objects.filter(category=category, is_available=True).exclude(pk=product.id)[:4]
 
     for related_product in related_products:
-        related_product.offer = Offer.objects.filter(product=related_product).first()
-        related_product.category.offer = OfferCategory.objects.filter(category=related_product.category).first()
+        now = timezone.now()
+        
+        related_product.offer = Offer.objects.filter(
+        Q(product=related_product) & Q(date_start__lte=now, date_end__gt=now)).first()
+
+        related_product.category.offer = OfferCategory.objects.filter(
+        Q(category=related_product.category) & Q(date_start__lte=now, date_end__gt=now)).first()
 
         if related_product.offer and related_product.category.offer:
             if related_product.offer.discount_percentage > related_product.category.offer.discount_percentage:

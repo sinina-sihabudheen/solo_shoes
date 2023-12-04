@@ -3,6 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+
+from carts.models import Cart, CartItem
 from .forms import CustomPasswordChangeForm, CustomUserDetailsForm, AddressForm
 from django.contrib.auth import update_session_auth_hash
 from .models import ShippingAddress,Order,OrderItem
@@ -119,22 +121,42 @@ def deleteaddress(request, address_id):
 
 @login_required
 def myorder(request):
-    # Assuming 'customer' field represents the user who placed the order
-    orders = OrderItem.objects.filter(order__customer=request.user).order_by('-date_added')
-    return render(request, 'user_profile/orders.html', {'orders': orders})
+    
+    order = Cart.objects.filter(user=request.user, complete=True).prefetch_related('cartitem_set__product')
+   
+
+    context =   {'order': order, 
+                 
+                 } 
+    return render(request, 'user_profile/orders.html', context)
 
 
+# @login_required
+# def cancel_order(request, cart_id):
+#     order = get_object_or_404(CartItem, id=cart_id)
+#     order.delivery_status = 'CN'
+#     order.save()  
+#     messages.success(request, 'Your order is successfully cancelled... ')
+#     return redirect('user_profile:myorder')
 @login_required
-def cancel_order(request, order_id):
-    order = get_object_or_404(OrderItem, id=order_id)
-    order.delivery_status = 'CN'
-    order.save()  # Save the changes
-    messages.success(request, 'Your order is successfully cancelled... ')
+def cancel_order(request, cart_id):
+    cart_item = get_object_or_404(CartItem, id=cart_id)
+
+    if cart_item:      
+
+        cart_item.delivery_status = 'CN'
+
+        cart_item.save()
+        messages.success(request, 'Your order is successfully cancelled.')
+    else:
+
+        messages.error(request, 'Invalid order or you are not authorized to cancel this order.')
+
     return redirect('user_profile:myorder')
 
 @login_required
-def generate_invoice(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
+def generate_invoice(request, cart_id):
+    order = get_object_or_404(Cart, id=cart_id)
     invoice_number = str(random.randint(100000, 999999))
 
 

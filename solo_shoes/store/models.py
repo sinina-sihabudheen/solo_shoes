@@ -1,3 +1,4 @@
+from django.forms import ValidationError
 from django.utils import timezone
 from django.db import models
 # from custom_admin_panel.models import Product, Category
@@ -11,6 +12,9 @@ class Offer(models.Model):
     date_end = models.DateTimeField()
     active = models.BooleanField(default=False)
 
+    
+
+    
     def __str__(self):
         return self.offer_name
 
@@ -22,6 +26,13 @@ class OfferCategory(models.Model):
     date_end = models.DateTimeField()
     active = models.BooleanField(default=False)
 
+    
+
+
+    
+
     def __str__(self):
         return self.category_offer_name
+
+
 

@@ -35,10 +35,15 @@ urlpatterns = [
     path('order/cancel_order/<int:order_item_id>/', views.cancel_order, name='cancel_order'),
 
     path('offer', views.manage_offers_view, name='offer'),
-    path('product_off_edit/<int:product_id>/', views.product_off_edit, name='product_off_edit'),
+    path('product_off_edit/<int:offer_id>/', views.product_off_edit, name='product_off_edit'),
     path('product_off_add/', views.product_off_add, name='product_off_add'),
-    path('category_off_edit/<int:category_id>/', views.category_off_edit, name='category_off_edit'),
+    path('category_off_edit/<int:offer_id>/', views.category_off_edit, name='category_off_edit'),
     path('category_off_add/', views.category_off_add, name='category_off_add'),
+
+    path('sales_report/', views.sales_report, name='sales_report'),
+    path('get_sales_data/<str:period>/', views.get_sales_data, name='get_sales_data'),
+
+    # path('admin_panel/download_sales_report_pdf/', views.sales_report_pdf_view, name='download_sales_report_pdf'),
 
 
 

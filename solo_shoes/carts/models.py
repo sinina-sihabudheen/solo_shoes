@@ -1,6 +1,7 @@
 from django.db import models
 from custom_admin_panel.models import Product, ProductVariance
 from django.contrib.auth.models import User
+from store.models import Offer
 from user_profile.models import ShippingAddress
 from django.utils import timezone
 
@@ -14,7 +15,8 @@ class Cart(models.Model):
     date_added = models.DateTimeField(default=timezone.now)
     complete = models.BooleanField(default=False, null=True, blank=False)
     PAYMENT_METHOD_CHOICES = (
-        ('COD', 'Cash on Delivery'),       
+        ('COD', 'Cash on Delivery'),
+        ('RAZ', 'Paid With Razorpay'),       
     )
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES,  null=True, blank=True)
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
@@ -26,9 +28,8 @@ class Cart(models.Model):
     
     @property
     def get_cart_total(self):
-        print("WWWWWWWWWWWW")
-        orderitems = self.cartitem.all()
-        total = sum([item.get_total for item in orderitems])
+        orderitems = self.cartitem_set.all()
+        total = sum(item.get_total for item in orderitems)
         
         return total
 
@@ -65,13 +66,17 @@ class CartItem(models.Model):
     
     @property
     def get_total(self):
-        if hasattr(self, 'discounted_price') and self.discounted_price is not None:
-            
-            total = self.discounted_price * self.quantity
-            print("XXXXXXXXXXX")
+        # Check if there is an active offer for the product
+        product_offer = Offer.objects.filter(product=self.product, active=True).first()
+
+        if product_offer:
+            # If there is an active offer, calculate the discounted price
+            discounted_price = self.product.price - (self.product.price * (product_offer.discount_percentage / 100))
+            total = discounted_price * self.quantity
         else:
+            # If no active offer, use the regular product price
             total = self.product.price * self.quantity
-            print("YYYYYYY")
+
         return total
 
 

@@ -115,7 +115,10 @@
                                             
                                             
                                                 {% if user.is_authenticated %}
+                                                {% if product.stock > 0 %}
                                                 <a href="{% url 'carts:add_cart' product_id=product.id %}" class="btn-product btn-cart"><span>add to cart</span></a>
+                                                {% else %} <h4>Out of stock</h4>
+                                                {% endif %}
                                                 {% else %}
                                                 <a href="{% url 'user_authentication:register' %}" class="btn-product btn-cart"><span>add to cart</span></a>
                                                 {% endif %}
@@ -282,8 +285,10 @@
                                             <!-- If user is authenticated and product is in stock, redirect to the 'carts:add_cart' URL -->
                                             <a href="{% url 'carts:add_cart' product_id=product.id %}" class="btn-product btn-cart">
                                                 <span>add to cart</span>
-                                            </a>                                        
+                                            </a>  
+                                        {% else %} <h4>Out Of Stock</h4>                                     
                                         {% endif %}
+
                                     {% else %}
                                         <!-- If user is not authenticated, redirect to the 'user_authentication:register' URL -->
                                         <a href="{% url 'user_authentication:register' %}" class="btn-product btn-cart">

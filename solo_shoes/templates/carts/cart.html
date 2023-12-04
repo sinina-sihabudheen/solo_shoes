@@ -55,7 +55,7 @@
 											</td>
 											<!-- <td class="price-col">{{ '₹ ' }}{{ cart_item.product.price }}</td> -->
 											<td class="price-col">
-												{% if cart_item.discounted_price is not None %}
+												{% if cart_item.offer.active %}
 													{{ '₹ ' }}{{ cart_item.discounted_price|floatformat:2 }}
 												{% else %}
 													{{ '₹ ' }}{{ cart_item.product.price|floatformat:2 }}
@@ -83,9 +83,9 @@
 											
 											<td class="total-col text-center">
 												
+												
 													{{ '₹ ' }}{{ cart_item.get_total|floatformat:2 }}
-													
-											
+
 											</td>
 											
 											<!-- <td class="total-col text-center">{{ '₹ ' }}{{ cart_item.get_total }}</td> -->
@@ -125,11 +125,12 @@
 												<td>Subtotal:</td>
 												<td id="subtotal">
 
-													{{ '₹ ' }}{{ total }}
+													₹ {{ cart.get_cart_total }}
 													
 
 												</td>
 											</tr><!-- End .summary-subtotal -->
+											
 												<tr class="summary-shipping">
 												<td>Shipping:</td>
 												<td>&nbsp;</td>
@@ -140,39 +141,39 @@
 												<div class="custom-control custom-radio">
 												<input type="radio" id="free-shipping" name="shipping" class="custom-control-input">
 												<label class="custom-control-label" for="free-shipping">Free Shipping</label>
-												</div><!-- End .custom-control -->
+												</div>
 												</td>
 												<td id="shipping-cost">{{ '₹ ' }}0.00</td>
-												</tr><!-- End .summary-shipping-row -->
+												</tr>
 												
 												<tr class="summary-shipping-row">
 												<td>
 												<div class="custom-control custom-radio">
 												<input type="radio" id="standard-shipping" name="shipping" class="custom-control-input">
 												<label class="custom-control-label" for="standard-shipping">Standard:</label>
-												</div><!-- End .custom-control -->
+												</div>
 												</td>
 												<td id="shipping-cost">{{ '₹ ' }}10.00</td>
-												</tr><!-- End .summary-shipping-row -->
+												</tr>
 												
 												<tr class="summary-shipping-row">
 												<td>
 												<div class="custom-control custom-radio">
 												<input type="radio" id="express-shipping" name="shipping" class="custom-control-input">
 												<label class="custom-control-label" for="express-shipping">Express:</label>
-												</div><!-- End .custom-control -->
+												</div>
 												</td>
 												<td id="shipping-cost">{{ '₹ ' }}20.00</td>
-												</tr><!-- End .summary-shipping-row -->
+												</tr>
 												
 												<tr class="summary-shipping-estimate">
 												<td>Estimate for Your Country<br> <a href="dashboard.html">Change address</a></td>
 												<td>&nbsp;</td>
-												</tr><!-- End .summary-shipping-estimate -->
+												</tr>
 												
 												<tr class="summary-total">
 												<td>Grand Total:</td>
-												<td id="grand-total">{{ '₹ ' }}{{ total }}</td>
+												<td id="grand-total">{{ '₹ ' }}{{ cart.get_cart_total }}</td>
 												</tr><!-- End .summary-total -->
 												</tbody>
 												</table><!-- End .table table-summary -->

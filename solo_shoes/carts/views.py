@@ -43,7 +43,7 @@ def add_cart(request, product_id):
     
     if current_user.is_authenticated:
         # If the user is authenticated, associate the Cart with the user's shopping cart
-        cart, _ = Cart.objects.get_or_create(user=current_user)
+        cart, _ = Cart.objects.get_or_create(user=current_user, complete = False)
         if not cart.shopping_cart:
             cart.shopping_cart, created = ShoppingCart.objects.get_or_create(session_key=request.session.session_key)
             cart.save()
@@ -83,7 +83,7 @@ def remove_cart_item(request, product_id):
 
     if current_user.is_authenticated:
         # If the user is authenticated, associate the Cart with the user's shopping cart
-        cart, _ = Cart.objects.get_or_create(user=current_user)
+        cart, _ = Cart.objects.get_or_create(user=current_user, complete = False)
         if not cart.shopping_cart:
             cart.shopping_cart, created = ShoppingCart.objects.get_or_create(session_key=request.session.session_key)
             cart.save()
@@ -111,35 +111,60 @@ def remove_cart_item(request, product_id):
 
 
 
+# def update_cart(request):
+#     if request.method == 'POST':
+#         product_id = request.POST.get('product_id')
+#         # quantity = request.POST.get('quantity')
+#         action = request.POST.get('action')
+#         product = Product.objects.get(id=product_id)
+#         cart = Cart.objects.get(user=request.user, complete=False)
+
+#         cart_item = CartItem.objects.get_or_create(order=cart, product__id=product_id, order__user=request.user.id)
+
+      
+#         if action == 'increment':
+#             if product.stock>0:
+#                 cart_item.quantity += 1
+#                 product.stock-=1
+#                 product.save()
+#         elif action == 'decrement':
+#             cart_item.quantity -= 1
+#             product.stock+=1
+#             product.save()
+
+#         if cart_item.quantity <= 0:
+#             cart_item.delete()
+#             cart_item.save()
+#             messages.success(request, 'Cart updated successfully.')
+            
+
+#     return redirect('carts:carts')
+
 def update_cart(request):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
-        quantity = request.POST.get('quantity')
         action = request.POST.get('action')
         product = Product.objects.get(id=product_id)
+        cart = Cart.objects.get(user=request.user, complete=False)
 
-        cart_item = get_object_or_404(CartItem, product__id=product_id, order__user=request.user.id)
-
-        try:
-            if quantity is not None:
-                quantity = int(quantity)
-                if action == 'increment':
-                    if product.stock>0:
-                        cart_item.quantity += 1
-                        product.stock-=1
-                        product.save()
-                elif action == 'decrement':
-                    cart_item.quantity -= 1
-                    product.stock+=1
+        cart_item, created = CartItem.objects.get_or_create(order=cart, product__id=product_id)
+        
+        if not created:
+            if action == 'increment':
+                if product.stock > 0:
+                    cart_item.quantity += 1
+                    product.stock -= 1
                     product.save()
-                    if cart_item.quantity <= 0:
-                        cart_item.delete()
-                cart_item.save()
-                messages.success(request, 'Cart updated successfully.')
-            else:
-                messages.warning(request, 'Quantity not provided.')
-        except ValueError:
-            messages.error(request, 'Invalid quantity value.')
+            elif action == 'decrement':
+                cart_item.quantity -= 1
+                product.stock += 1
+                product.save()
+
+                if cart_item.quantity <= 0:
+                    cart_item.delete()
+
+            cart_item.save()
+            messages.success(request, 'Cart updated successfully.')
 
     return redirect('carts:carts')
 
@@ -150,8 +175,8 @@ from decimal import Decimal
 def carts(request, total=0, quantity=0):
     try:
         if request.user.is_authenticated:
-            cart_instance = Cart.objects.get(user=request.user)
-            cart_items = CartItem.objects.filter(order=cart_instance)
+            cart = Cart.objects.get(user=request.user, complete = False)
+            cart_items = CartItem.objects.filter(order=cart)
 
             for cart_item in cart_items:
                 cart_item.offer = Offer.objects.filter(product=cart_item.product).first()
@@ -188,6 +213,7 @@ def carts(request, total=0, quantity=0):
         'total': total,
         'quantity': quantity,
         'cart_items': cart_items,
+        'cart' : cart,
     }
 
     return render(request, 'carts/cart.html', context)
@@ -200,84 +226,20 @@ def carts(request, total=0, quantity=0):
 
 def checkout(request):
     try:
-        cart = Cart.objects.get(user=request.user)
+        cart = Cart.objects.get(user=request.user, complete = False)
         cart_items = CartItem.objects.filter(order=cart)
         user_address = ShippingAddress.objects.filter(user=request.user, status=True).first()
+        print(user_address)
 
         # Calculate total and quantity
         total = 0
         quantity = 0
         for cart_item in cart_items:
-                cart_item.offer = Offer.objects.filter(product=cart_item.product).first()
-                product_category = cart_item.product.category  
-                cart_item.product.category.offer = OfferCategory.objects.filter(category=product_category).first()
-                
-                if cart_item.offer and cart_item.product.category.offer:
-                    discount_percentage = max(cart_item.offer.discount_percentage, cart_item.product.category.offer.discount_percentage)
-                elif cart_item.product.category.offer:
-                    discount_percentage = cart_item.product.category.offer.discount_percentage
-                elif cart_item.offer:
-                    discount_percentage = cart_item.offer.discount_percentage
-                else:
-                    discount_percentage = 0
-                
-                if discount_percentage > 0:
-                    discount_factor = Decimal(discount_percentage) / Decimal(100)
-                    cart_item.discounted_price = cart_item.product.price - (cart_item.product.price * discount_factor)
-                else:
-                    cart_item.discounted_price = None
-                
-                # Update total and quantity
-                if cart_item.discounted_price is not None:
-                    total += cart_item.discounted_price * cart_item.quantity
-                else:
-                    total += cart_item.product.price * cart_item.quantity
-                    
-                quantity += cart_item.quantity
+            total += (cart_item.product.price * cart_item.quantity)
+            quantity += cart_item.quantity
 
-        if request.method == 'POST':
-            # Check if the form is for a new address
-            if 'billing_first_name' in request.POST:
-                # Process the new address form
-                address_form = AddressForm(request.POST)
-                if address_form.is_valid():
-                    with transaction.atomic():
-                        # Create a new address
-                        new_address = address_form.save(commit=False)
-                        new_address.user = request.user
-                        new_address.save()
-                        messages.success(request, 'New address added successfully.')
 
-                        # Redirect to the checkout page again
-                        return redirect('carts:checkout')
-                else:
-                    messages.error(request, 'Error adding the address. Please check the form.')
-            else:
-                # Process the checkout form for placing the order
-                with transaction.atomic():
-                    # Create a new order
-                    order = Order.objects.create(
-                        customer=request.user,
-                        complete=False,
-                        payment_method='COD',  # Set the payment method as needed
-                        shipping_address=user_address,
-                        # order_notes=request.POST.get('order_notes', ''),  
-                    )
-
-                    # Associate each cart item with the order
-                    for cart_item in cart_items:
-                        OrderItem.objects.create(
-                            product=cart_item.product,
-                            order=order,
-                            quantity=cart_item.quantity,
-                            delivery_status='PL',  
-                        )
-
-                    # Clear the cart
-                    cart_items.delete()
-
-                    messages.success(request, 'Order placed successfully!')
-                    return redirect('carts:order_placed')
+      
 
         user_addresses = ShippingAddress.objects.filter(user=request.user)
 
@@ -297,57 +259,147 @@ def checkout(request):
         return redirect('carts:carts')
 
 
+# def place_order(request):
+#     if request.user.is_authenticated:
+#         if request.method == 'POST':
+#             selected_payment_method = request.POST.get('payment_method')
+#             selected_address_id = request.POST.get('selected_address')
+            
+#             try:
+#                 selected_address = ShippingAddress.objects.get(id=selected_address_id)
+#             except ShippingAddress.DoesNotExist:
+#                 messages.error(request, "Please select a valid shipping address before placing your order.")
+#                 return redirect('carts:checkout') 
+            
+#             cart_items = OrderItem.objects.filter(order_customer=request.user, order_complete=False)
+#             if not cart_items:
+#                 messages.error(request, "Your cart is empty. Add items to your cart before placing an order.")
+#                 return redirect('carts:carts')
+            
+                       
+#             order = Order(
+#                 customer=request.user, 
+#                 shipping_address=selected_address,
+                
+#             )
+            
+           
+                       
+#             order.save()
+            
+#             if selected_payment_method == 'cod':
+#                 order.payment_method='COD'        
+                          
+#                 order.complete = True
+#                 order.save()
+            
+           
+#                 for cart_item in cart_items:
+#                     cart_item.order = order 
+#                     cart_item.delivery_status = 'PL'
+#                     cart_item.save()
+           
+#                 messages.success(request, 'Your order has been placed successfully!')                
+#                 return redirect('carts:order_placed')
+#             else:
+#                 messages.warning(request, 'Online payment is not supported in this example. Please choose COD.')
+
+#     return render(request, "carts/checkout.html")
+# def place_order(request):
+#     if request.user.is_authenticated:
+#         if request.method == 'POST':
+#             print("Enter to the form")
+#             selected_payment_method = request.POST.get('payment_method')
+#             selected_address_id = request.POST.get('shipping_address')
+#             print("wwwwwwwwwwww",selected_address_id)
+
+#             # if not selected_payment_method or not selected_address_id:
+#             #     messages.error(request, "Please select a valid payment method and shipping address.")
+#             #     return redirect('carts:checkout')
+
+#             try:
+#                 selected_address = ShippingAddress.objects.get(id=selected_address_id)
+                
+#             except ShippingAddress.DoesNotExist:
+#                 messages.error(request, "Please select a valid shipping address before placing your order.")
+#                 return redirect('carts:checkout') 
+            
+            
+#             cart_items = CartItem.objects.filter(order__user=request.user, order__complete=False)
+
+
+            
+#             if not cart_items:
+#                 messages.error(request, "Your cart is empty. Add items to your cart before placing an order.")
+#                 return redirect('carts:carts')
+
+#             order = Order(
+#                 customer=request.user,
+#                 shipping_address=selected_address,
+#                 payment_method =  'COD'   , 
+              
+#             )
+
+               
+#             order.complete = True
+#             order.save()
+
+#             for cart_item in cart_items:
+#                     cart_item.order = order 
+#                     cart_item.delivery_status = 'PL'
+#                     cart_item.save()
+
+#             messages.success(request, 'Your order has been placed successfully!')                
+#             return redirect('carts:order_placed')
+
+#     return redirect('carts:checkout')
+
+from .models import Cart, CartItem
+
 def place_order(request):
     if request.user.is_authenticated:
         if request.method == 'POST':
             selected_payment_method = request.POST.get('payment_method')
-            selected_address_id = request.POST.get('selected_address')
-            
+            selected_address_id = request.POST.get('shipping_address')
+
             try:
                 selected_address = ShippingAddress.objects.get(id=selected_address_id)
             except ShippingAddress.DoesNotExist:
                 messages.error(request, "Please select a valid shipping address before placing your order.")
-                return redirect('carts:checkout') 
-            
-            cart_items = OrderItem.objects.filter(order_customer=request.user, order_complete=False)
+                return redirect('carts:checkout')
+
+            cart = Cart.objects.get(user=request.user, complete=False)
+            cart_items = CartItem.objects.filter(order=cart)
+
             if not cart_items:
                 messages.error(request, "Your cart is empty. Add items to your cart before placing an order.")
                 return redirect('carts:carts')
-            
-                       
-            order = Order(
-                customer=request.user, 
-                shipping_address=selected_address,
-                
-            )
-            
-           
-                       
-            order.save()
-            
-            if selected_payment_method == 'cod':
-                order.payment_method='COD'        
-                          
-                order.complete = True
-                order.save()
-            
-           
-                for cart_item in cart_items:
-                    cart_item.order = order 
-                    cart_item.delivery_status = 'PL'
-                    cart_item.save()
-           
-                messages.success(request, 'Your order has been placed successfully!')                
-                return redirect('carts:order_placed')
-            else:
-                messages.warning(request, 'Online payment is not supported in this example. Please choose COD.')
 
-    return render(request, "carts/checkout.html")
+            cart = Cart(
+                user=request.user,
+                shipping_address=selected_address,
+                payment_method='COD',  # Set the payment method as needed
+            )
+            cart.save()
+
+            for cart_item in cart_items:
+                cart_item.order = cart
+                cart_item.delivery_status = 'PL'
+                cart_item.save()
+
+            cart.complete = True
+            cart.save()
+
+            messages.success(request, 'Your order has been placed successfully!')
+            return redirect('carts:order_placed')
+
+    return redirect('carts:checkout')
+
+
 
 @login_required
 def add_address(request):
-    # Retrieve all addresses for the user
-    user_addresses = ShippingAddress.objects.filter(user=request.user)
+    
 
     if request.method == 'POST':
         # Create a new address
@@ -362,7 +414,7 @@ def add_address(request):
     else:
         address_form = AddressForm()
 
-    return render(request, 'carts/checkout.html', {'address_form': address_form, 'user_addresses': user_addresses})
+    return render(request, 'carts/add_address.html', {'address_form': address_form})
 
 
 def order_placed(request):

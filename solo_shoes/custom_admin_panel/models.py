@@ -13,6 +13,8 @@ class Category(models.Model):
         verbose_name = 'category'
         verbose_name_plural = 'categories'
 
+    
+
     def __str__(self):
         return self.category_name or 'Category'
     
@@ -26,6 +28,8 @@ class Product(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     offer = models.ForeignKey(Offer, on_delete=models.SET_NULL, null=True, blank=True)
+
+    
     
 
     def __str__(self):
