@@ -111,7 +111,7 @@
                                 
                                   {% if order.payment_method == 'COD' %}
                                   
-                                      {{ cod_total }}
+                                      {{ order.get_cart_total }}
                                       {% endif %}
                                   
                               </h6>
@@ -193,6 +193,32 @@
   <!-- Custom js for this page -->
   <script src="{% static 'adminside/assets/js/dashboard.js' %}"></script>
   <!-- End custom js for this page -->
+
+  <script
+          src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+          let COD = document.getElementById("cod").value
+         
+
+    console.log(COD);
+        var data = {
+            labels: ['COD'],
+            datasets: [{
+              data: [COD],
+              backgroundColor: ['#FFCE56']
+            }]
+          };
+
+         
+          var ctx = document.getElementById('myChart').getContext('2d');
+
+       
+          var myPieChart = new Chart(ctx, {
+            type: 'bar',
+            data: data
+
+          });
+        </script>
 </body>
 
 </html>

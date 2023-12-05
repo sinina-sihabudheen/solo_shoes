@@ -12,6 +12,15 @@ from django.db import IntegrityError
 from django.views.decorators.cache import never_cache
 from custom_admin_panel.models import Product
 from store.models import Offer, OfferCategory
+import random
+import string
+
+# def generate_referral_code():
+#     # Generate a random alphanumeric code
+#     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+
+
+
 
 
 
@@ -60,6 +69,8 @@ def register(request):
         try:
             # Attempt to create the user
             myuser = User.objects.create_user(username, email, password)
+            # new_user = CustomUser.objects.create(username='new_user', referral_code=generate_referral_code())
+
             myuser.first_name = first_name
             myuser.last_name = last_name
             myuser.is_active = False

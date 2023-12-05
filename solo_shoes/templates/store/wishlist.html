@@ -35,7 +35,7 @@
 						</thead>
 
 						<tbody>
-							<tr>
+							<tr> {% if wishlist.products.all %}
                                 {% for item in wishlist.products.all %}
                                 <td class="price-col">
                                     {{ item.product_name }}
@@ -82,6 +82,11 @@
                                 </td>
                             </tr>
 							{% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="6">Your wishlist is empty.</td>
+                            </tr>
+                        {% endif %}
 						</tbody>
 					</table><!-- End .table table-wishlist -->
 	            	

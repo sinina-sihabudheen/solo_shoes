@@ -1,8 +1,19 @@
 from typing import Any
 from django.db import models
 from store.models import Offer,OfferCategory
+# from django.contrib.auth.models import AbstractUser, Group, Permission
 
-# Create your models here.
+
+# class CustomUser(AbstractUser):
+#     referral_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    
+#     # Add related_name to avoid clashes
+#     groups = models.ManyToManyField(Group, related_name='custom_user_groups')
+#     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_permissions')
+
+
+
+
 class Category(models.Model):
     category_name = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
@@ -28,6 +39,7 @@ class Product(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     modified_date = models.DateTimeField(auto_now=True)
     offer = models.ForeignKey(Offer, on_delete=models.SET_NULL, null=True, blank=True)
+    category_offer = models.ForeignKey(OfferCategory, on_delete=models.SET_NULL, null=True, blank=True)
 
     
     

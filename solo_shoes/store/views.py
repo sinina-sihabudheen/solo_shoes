@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from custom_admin_panel.models import Product
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-from carts.models import Whishlist
+from carts.models import Cart, CartItem, Whishlist
 from django.contrib import messages
 from django.db.models import Q
 from django.core.paginator import EmptyPage,PageNotAnInteger,Paginator
@@ -17,7 +17,7 @@ from store.models import Offer,OfferCategory
 def shop(request, category=None):
     if category:
         products = Product.objects.filter(category__category_name__iexact=category, is_available=True)
-        paginator = Paginator(products,3)
+        paginator = Paginator(products,6)
         page = request.GET.get('page')
         paged_products = paginator.get_page(page)
     else:
@@ -26,7 +26,7 @@ def shop(request, category=None):
         page = request.GET.get('page')
         paged_products = paginator.get_page(page)
     
-    for product in products:
+    for product in paged_products:
         now = timezone.now()
         
         product.offer = Offer.objects.filter(
@@ -37,30 +37,33 @@ def shop(request, category=None):
         
 
         if product.offer and product.category.offer:
-            if product.offer.discount_percentage > product.category.offer.discount_percentage:
-                
-                discount_percentage = Decimal(product.offer.discount_percentage) / Decimal(100)
-                product.discounted_price = product.price - (product.price * discount_percentage)
-            else:
-                discount_percentage = Decimal(product.category.offer.discount_percentage) / Decimal(100)
-                product.discounted_price = product.price - (product.price * discount_percentage)
+            discount_percentage = max(product.offer.discount_percentage, product.category.offer.discount_percentage)
+
+            
         elif product.category.offer:
-            discount_percentage = Decimal(product.category.offer.discount_percentage) / Decimal(100)
-            product.discounted_price = product.price - (product.price * discount_percentage)
-        elif product.offer:
-            discount_percentage = Decimal(product.offer.discount_percentage) / Decimal(100)
-            product.discounted_price = product.price - (product.price * discount_percentage)
              
+            discount_percentage = product.category.offer.discount_percentage
+
+        elif product.offer:
+            discount_percentage = product.offer.discount_percentage
+
+        else:
+            discount_percentage = 0
+
+        if discount_percentage > 0:
+            discount_factor = Decimal(discount_percentage) / Decimal(100)
+            product.discounted_price = product.price - (product.price * discount_factor)
         else:
             product.discounted_price = None
     
-         
+        # print(f"Product: {product.product_name}, Discounted Price: {product.discounted_price}")
+
     context = {
         'products': paged_products,
+        
         'category': category,
     }
     return render(request, 'store/shop.html', context)
-
 
 
 
@@ -149,10 +152,11 @@ def add_to_wishlist(request, product_id):
 
             wishlist, created = Whishlist.objects.get_or_create(user=request.user)
             product = get_object_or_404(Product, id=product_id)
-            print(product)
+            
 
             wishlist.products.add(product)
             wishlist.save()
+            print("XXXX",wishlist.products.all())
 
             response_data['success'] = True
             response_data['message'] = 'Item added to your wishlist'

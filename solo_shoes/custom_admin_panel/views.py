@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
+import random
 from django.db.models import Q, F, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from decimal import Decimal
 from datetime import datetime, timezone
 from django.utils import timezone
 from carts.models import Cart, CartItem
+# from custom_admin_panel.helpers import render_to_pdf
 from store.models import Offer, OfferCategory
 from .models import Category, Product, ProductImage
 from django.contrib.auth.decorators import login_required
@@ -16,8 +18,8 @@ from django.contrib import messages
 from .forms import ProductForm, CategoryForm, ProductImageFormSet
 from django.http import HttpResponse, JsonResponse
 from django.views import View
-from django.template.loader import get_template
-from xhtml2pdf import pisa
+# from django.template.loader import get_template
+# from xhtml2pdf import pisa
 from django.views.decorators.http import require_GET
 from django.db.models.functions import TruncWeek, TruncMonth, TruncDay
 
@@ -72,7 +74,7 @@ def admin_login(request):
 #         return render(request,'custom_admin_panel/dashboard.html',context)
 #     return redirect('custom_admin_panel:adminlogin')
 
-@login_required
+@login_required(login_url='custom_admin_panel:adminlogin')
 def dashboard(request):
     if request.user.is_authenticated and request.user.is_superuser:
         user = User.objects.all()
@@ -113,8 +115,8 @@ def dashboard(request):
         cod_orders = all_orders.filter(payment_method='COD')
         cod_count = cod_orders.count()    
         cod_total = sum(order.get_cart_total for order in cod_orders)
-        # products = Product.objects.all() 
-        # total_stock = sum()
+        products = Product.objects.all() 
+        total_stock = sum(product.stock for product in products)
 
         context = {
             'user':user,
@@ -126,6 +128,7 @@ def dashboard(request):
             'cod_total': cod_total,        
             'filter_type': filter_type,  
             'order_delivered': order_delivered,
+            'total_stock' : total_stock,
         }
 
         return render(request,'custom_admin_panel/dashboard.html',context)
@@ -208,7 +211,7 @@ def unblock_category(request, category_id):
     category.save()
     return redirect('custom_admin_panel:category_list')
 
-
+@login_required(login_url='custom_admin_panel:adminlogin')
 def category_list(request):
     query = request.GET.get('q')
     categories = Category.objects.all()
@@ -233,7 +236,7 @@ def category_list(request):
     return render(request, 'custom_admin_panel/category_list.html', context)
 
 
-
+@login_required(login_url='custom_admin_panel:adminlogin')
 def product_list(request):
     products = Product.objects.all()
 
@@ -318,14 +321,14 @@ def edit_product(request, product_id):
 
 
 #Order Management...
-
+@login_required(login_url='custom_admin_panel:adminlogin')
 def order(request):
     orders = Cart.objects.all()
-    order_items = CartItem.objects.all()
+    # order_items = CartItem.objects.filter()
     
 
     context = {
-        'order_items': order_items,
+        # 'order_items': order_items,
         'orders' : orders,
     }
 
@@ -357,6 +360,7 @@ def cancel_order(request, order_item_id):
     messages.success(request, 'Your order is successfully cancelled... ')
     return redirect('custom_admin_panel:order')
 
+@login_required(login_url='custom_admin_panel:adminlogin')
 def manage_offers_view(request):
     category_offers = OfferCategory.objects.all()
     product_offers = Offer.objects.all()
@@ -470,7 +474,7 @@ def product_off_edit(request, offer_id):
 
     return render(request, 'custom_admin_panel/product_offer.html', context)
 
-
+@login_required(login_url='custom_admin_panel:adminlogin')
 def sales_report(request):
     delivered_order_items = CartItem.objects.filter(delivery_status='D')
     print(delivered_order_items)
@@ -531,38 +535,56 @@ def get_sales_data(request, period):
 
     return JsonResponse({'labels': labels, 'data': sales_data})
 
+@login_required(login_url='custom_admin_panel:adminlogin')
+def sales_details(request):
+    if request.method == 'POST':
+        start_date_str = request.POST.get('startDate')
+        end_date_str = request.POST.get('endDate')
+       
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+        
+        order_items = CartItem.objects.filter(order__date_added__range=(start_date, end_date), order__isnull=False)
+     
+        product_quantities = order_items.values('product__product_name').annotate(total_quantity=Sum('quantity'))  
 
-def sales_report_pdf_view(request):
-    # Fetch sales data for the current week as an example
-    start_date = datetime.now() - timedelta(days=datetime.now().weekday())
-    end_date = start_date + timedelta(days=6)
-    
-    weekly_sales = CartItem.objects.filter(
-        order__date_added__range=[start_date, end_date]
-    ).aggregate(total_sales=Sum('quantity'))
+        context = {
+            'order_items': order_items,
+            'product_quantities': product_quantities,
+            'start_date':start_date_str,
+            'end_date':end_date_str,
 
-    # Fetch category-wise sales data
-    category_sales = Category.objects.annotate(total_sales=Sum('products__cartitem__quantity'))
+        } 
 
-    context = {
-        'weekly_sales': weekly_sales['total_sales'] or 0,
-        'category_sales': category_sales,
-    }
+       
+    return render(request, 'custom_admin_panel/salespdf.html', context)
 
-    # Generate PDF
-    template_path = 'custom_admin_panel/sales_report_pdf_template.html'
-    template = get_template(template_path)
-    html = template.render(context)
+# def generate_sales(request):
+#     order = CartItem.objects.all()
+#     sales_number = str(random.randint(100000, 999999))
 
-    # Create PDF
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="sales_report.pdf"'
-    pisa_status = pisa.CreatePDF(html, dest=response)
 
-    # Return PDF
-    if pisa_status.err:
-        return HttpResponse('We had some errors <pre>' + html + '</pre>')
-    return response
+#     context = {
+#         'order': order,
+#         'sales_number':sales_number,
+       
+#     }
+ 
+
+#     pdf = render_to_pdf('custom_admin_panel/salespdf.html', context)
+#     if pdf:
+#         response = HttpResponse(pdf, content_type='application/pdf')
+#         filename =f"sales_{order.id}.pdf"
+#         content = "inline; filename='%s'" % filename
+#         response['Content-Disposition'] = content
+#         return response
+#     else:
+#         print("Error generating the PDF.")
+#         return HttpResponse("Error generating the invoice.")
+
+
+
+
 
 
 

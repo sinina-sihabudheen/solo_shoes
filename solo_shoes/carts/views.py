@@ -22,7 +22,6 @@ def _cart_id(request):
         cart = request.session.session_key
         shopping_cart, created = ShoppingCart.objects.get_or_create(session_key=cart)
         
-        # Assuming you want to associate the shopping cart with the user's cart if the user is authenticated
         if request.user.is_authenticated:
             user_cart, _ = Cart.objects.get_or_create(user=request.user, shopping_cart=shopping_cart)
         
@@ -35,14 +34,14 @@ def add_cart(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
-        # Handle the case where the product with the given ID doesn't exist
+        
         messages.error(request, "Product not found.")
         return redirect('carts:carts')
     
     current_user = request.user
     
     if current_user.is_authenticated:
-        # If the user is authenticated, associate the Cart with the user's shopping cart
+        
         cart, _ = Cart.objects.get_or_create(user=current_user, complete = False)
         if not cart.shopping_cart:
             cart.shopping_cart, created = ShoppingCart.objects.get_or_create(session_key=request.session.session_key)
@@ -55,19 +54,15 @@ def add_cart(request, product_id):
         product.stock-=1
         product.save()
     except CartItem.DoesNotExist:
-        cart_item = CartItem.objects.create(order=cart, product=product, quantity=1)
-
-    # Save the changes to the CartItem
-        cart_item.save()
-
-    # Update the stock of the product and save it
+        cart_item = CartItem.objects.create(order=cart, product=product, quantity=1)    
+        cart_item.save()   
         product.stock -= 1
         product.save()
-    #Remove the product from whishlist    
+        
     try:
          wishlist = Whishlist.objects.get(user=request.user)
     except ObjectDoesNotExist:
-    # Wishlist doesn't exist, create a new one
+   
         wishlist = Whishlist(user=request.user)
         wishlist.save()
 
@@ -183,12 +178,12 @@ def carts(request, total=0, quantity=0):
                 product_category = cart_item.product.category  
                 cart_item.product.category.offer = OfferCategory.objects.filter(category=product_category).first()
                 
-                if cart_item.offer and cart_item.product.category.offer:
-                    discount_percentage = max(cart_item.offer.discount_percentage, cart_item.product.category.offer.discount_percentage)
+                if cart_item.product.offer and cart_item.product.category.offer:
+                    discount_percentage = max(cart_item.product.offer.discount_percentage, cart_item.product.category.offer.discount_percentage)
                 elif cart_item.product.category.offer:
                     discount_percentage = cart_item.product.category.offer.discount_percentage
-                elif cart_item.offer:
-                    discount_percentage = cart_item.offer.discount_percentage
+                elif cart_item.product.offer:
+                    discount_percentage = cart_item.product.offer.discount_percentage
                 else:
                     discount_percentage = 0
                 

@@ -1,7 +1,7 @@
 from django.db import models
 from custom_admin_panel.models import Product, ProductVariance
 from django.contrib.auth.models import User
-from store.models import Offer
+from store.models import Offer, OfferCategory
 from user_profile.models import ShippingAddress
 from django.utils import timezone
 
@@ -69,15 +69,26 @@ class CartItem(models.Model):
         # Check if there is an active offer for the product
         product_offer = Offer.objects.filter(product=self.product, active=True).first()
 
-        if product_offer:
-            # If there is an active offer, calculate the discounted price
-            discounted_price = self.product.price - (self.product.price * (product_offer.discount_percentage / 100))
-            total = discounted_price * self.quantity
+        # Check if there is an active offer for the product category
+        category_offer = OfferCategory.objects.filter(category=self.product.category, active=True).first()
+
+        if product_offer and category_offer:
+            # If both product and category have offers, choose the greater discount
+            discount_percentage = max(product_offer.discount_percentage, category_offer.discount_percentage)
+        elif category_offer:
+            discount_percentage = category_offer.discount_percentage
+        elif product_offer:
+            discount_percentage = product_offer.discount_percentage
         else:
             # If no active offer, use the regular product price
-            total = self.product.price * self.quantity
+            return self.product.price * self.quantity
+
+        # Calculate the discounted price
+        discounted_price = self.product.price - (self.product.price * (discount_percentage / 100))
+        total = discounted_price * self.quantity
 
         return total
+
 
 
 class Whishlist(models.Model):

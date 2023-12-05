@@ -42,8 +42,9 @@ urlpatterns = [
 
     path('sales_report/', views.sales_report, name='sales_report'),
     path('get_sales_data/<str:period>/', views.get_sales_data, name='get_sales_data'),
+    path('sales_details/', views.sales_details, name='sales_details'),
+    # path('generate_sales/', views.generate_sales, name='generate_sales'),
 
-    # path('admin_panel/download_sales_report_pdf/', views.sales_report_pdf_view, name='download_sales_report_pdf'),
 
 
 
