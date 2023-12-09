@@ -38,7 +38,7 @@
 											<input class="form-check-input col-1" type="radio" value="{{ address.id }}" id="shipping_address_{{ address.id }}" name="shipping_address" checked>
 											<!-- <input type="radio" id="shipping_address_{{ address.id }}" name="shipping_address" class=" mt-5  custom-control-input" value="{{ address.id }}" {% if address == user_address %}checked{% endif %}> -->
 											<label class="col-9   mx-auto mx-5" for="shipping_address_{{ address.id }}">
-												{{ address.id }}---{{ address.full_name }} - {{ address.address_lines }}, {{ address.city }}, {{ address.state }}, {{ address.pin_code }} - {{ address.country }} - {{ address.mobile }}
+												{{ address.full_name }} - {{ address.address_lines }}, {{ address.city }}, {{ address.state }}, {{ address.pin_code }} - {{ address.country }} - {{ address.mobile }}
 											</label>
 										</div>
 									{% endfor %}
@@ -91,13 +91,15 @@
 																						
 												<div class="card">
 											
-													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
+													<!-- <div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
 														<input class="form-check-input col-3" type="radio" value="online" id="online" name="payment" checked>
 														<label class="col-9  mx-auto mx-5" for="online">
-															Online
+															Pay with RazorPay
 														</label>
 
-													</div>
+													</div> -->
+													
+													
 													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
 														<input class="form-check-input col-3" type="radio" value="cod" id="cod" name="payment">
 														<label class="col-9  mx-auto mx-5" for="cod">
@@ -117,6 +119,13 @@
 											{% endif %}
 										</form>
 										<!-- Address form (initially hidden) -->
+										<!-- <button type=""  class="btn btn-primary payWithRazorpay w-100 mt-2">
+											Pay with RazorPay
+										</button> -->
+										<button type="submit" class="btn btn-outline-primary-2 btn-order btn-block payWithRazorpay"   id="place-order-Online-button"  data-name="{{ user_info.name }}" data-email="{{ user_info.email }}"  data-value="razorpay">
+											<span class="btn-text">Place Ordekkkkkr</span>
+											<span class="btn-hover-text">Proceed to Checkoutjuu</span>
+										</button>
 										
 									</div>
 											</div><!-- End .summary -->
@@ -150,15 +159,94 @@
 
     <!-- Plugins JS File -->
     <script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
-    <script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+    <!-- <script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script> -->
     <script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
     <script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
     <script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
     <script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
     <!-- Main JS File -->
     <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+
+	<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<!-- <script src="{% static 'user_auth/assets/js/checkout.js' %}"></script> -->
+
+	<script>
+		$(document).ready(function (){
+    $('.payWithRazorpay').click(function (e){
+        e.preventDefault();
+        console.log("EXECUTED")
+
+         // Fetch values from form elements using name attributes
+        var selectedAddressId = $('input[name="shipping_address"]:checked').val();
+        
+		var token = $("[name='csrfmiddlewaretoken']").val();
+        console.log(selectedAddressId)
+
+        
+        
+        $.ajax({
+            method: "GET",
+            url: "/cart/proceed_to_pay/",
+            success: function (response){
+              console.log(response)
+
+
+              var options = {
+            "key": "rzp_test_jqDk0ijEJwoHUe", // Enter the Key ID generated from the Dashboard
+            "amount": response.total_price * 100,  // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            "currency": "INR",
+            "name": "SOLO SHOES", //your business name
+            "description": "Thank you for buying from us...",
+            "image": "https://example.com/your_logo",
+       
+            "handler": function (responseb){
+                alert(responseb.razorpay_payment_id);
+
+               data = {
+                'selectedAddressId':selectedAddressId,
+                'pay_mod':'RAZ',
+                'transaction_id': responseb.razorpay_payment_id,
+               
+                csrfmiddlewaretoken:token,
+               }
+               $.ajax({
+                    method : "POST",
+                    url: "/cart/place_order_raz/",
+                    data: data,
+                    success: function(responsec) {
+						console.log("EXECUTEDPLACE")
+                        console.log("Response Object:", responsec);
+                        Swal.fire("Congrats!!!", responsec.message, "success").then((value) => {
+                            if (responsec.status === 'success') {
+                    window.location.href = '/cart/order_placed/';
+                }
+                        });
+                    }
+               });
+            },
+            "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
+                "full_name": name, //your customer's name
+                // "phone": phone,  //Provide the customer's phone number for better conversion rates 
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+        };
+        var rzp1 = new Razorpay(options); 
+		rzp1.willReadFrequently = true;
+    
+        rzp1.open();
+            }
+        })
+
+        
+    });
+});
+
+
+
+	</script>
+
 </body>
-
-
-<!-- molla/checkout.html  22 Nov 2019 09:55:06 GMT -->
 </html>

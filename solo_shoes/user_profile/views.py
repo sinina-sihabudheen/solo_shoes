@@ -33,8 +33,6 @@ def editpassword(request):
             user.set_password(new_password)
             user.save()
 
-            # It's a good practice to update the session auth hash to prevent
-            # the user from being logged out after a password change.
             update_session_auth_hash(request, user)
 
             messages.success(request, 'Password changed successfully.')
@@ -130,14 +128,16 @@ def myorder(request):
                  } 
     return render(request, 'user_profile/orders.html', context)
 
+@login_required
+def view_order(request,cart_id):
+ 
+    order = get_object_or_404(Cart.objects.prefetch_related('cartitem_set__product'), id=cart_id)
 
-# @login_required
-# def cancel_order(request, cart_id):
-#     order = get_object_or_404(CartItem, id=cart_id)
-#     order.delivery_status = 'CN'
-#     order.save()  
-#     messages.success(request, 'Your order is successfully cancelled... ')
-#     return redirect('user_profile:myorder')
+    context =   {'order': order,                
+                 } 
+    return render(request, 'user_profile/vieworder.html', context)
+
+
 @login_required
 def cancel_order(request, cart_id):
     cart_item = get_object_or_404(CartItem, id=cart_id)

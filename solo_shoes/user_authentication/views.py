@@ -142,7 +142,10 @@ def resend_otp(request):
     # return redirect('user_authentication:password_otp')
     return render(request, 'user_authentication/paswrd_otp.html')
 
-
+def resend_register_otp(request):
+    send_otp(request)
+    
+    return render(request, 'user_authentication/otp.html')
 
 
 @never_cache
@@ -161,7 +164,7 @@ def password_otp_verification(request):
                 user.is_active = True
                 user.save()
                 # login(request, user)
-                messages.info(request, 'Password is reset successfully...')
+                # messages.info(request, 'Password is reset successfully...')
                 return redirect('user_authentication:set_password')  # Assuming 'home:index' is the URL name for the home page
             else:
                 messages.error(request, "OTP doesn't match")

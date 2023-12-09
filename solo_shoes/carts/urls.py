@@ -12,7 +12,10 @@ urlpatterns = [
     path('cart/checkout/', views.checkout, name='checkout'),
     path('cart/place_order/', views.place_order, name='place_order'),
     path('cart/add_address/', views.add_address, name='add_address'),
-    path('cart/order_placed/', views.order_placed, name='order_placed'),
+    path('order_placed/', views.order_placed, name='order_placed'),
+
+    path('proceed_to_pay/', views.razorpaycheck,name='proceed_to_pay'),
+    path('place_order_raz/', views.place_order_raz,name='place_order_raz'),
     
 
 

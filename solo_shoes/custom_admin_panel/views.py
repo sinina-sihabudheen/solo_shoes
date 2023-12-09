@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import random
+from django.db.models import Prefetch
 from django.db.models import Q, F, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from decimal import Decimal
@@ -17,7 +17,6 @@ from django.contrib import messages
 
 from .forms import ProductForm, CategoryForm, ProductImageFormSet
 from django.http import HttpResponse, JsonResponse
-from django.views import View
 # from django.template.loader import get_template
 # from xhtml2pdf import pisa
 from django.views.decorators.http import require_GET
@@ -323,15 +322,16 @@ def edit_product(request, product_id):
 #Order Management...
 @login_required(login_url='custom_admin_panel:adminlogin')
 def order(request):
-    orders = Cart.objects.all()
-    # order_items = CartItem.objects.filter()
-    
+    target_payment_method = 'COD'  # Change this to the desired payment method
+
+    # Fetch orders with the specified payment method along with their related items
+    orders_with_items = Cart.objects.filter(payment_method=target_payment_method).prefetch_related(
+        Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
+    ).all()
 
     context = {
-        # 'order_items': order_items,
-        'orders' : orders,
+        'orders_with_items': orders_with_items,
     }
-
     return render(request, 'custom_admin_panel/order_list.html', context)
 
 def order_edit(request, order_item_id):

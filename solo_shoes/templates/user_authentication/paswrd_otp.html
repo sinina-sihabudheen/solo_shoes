@@ -103,9 +103,7 @@
 
             <button type="submit" class="submit-button">Verify</button>
         </form>
-        {% for message in messages %}
-                <p class="error-message">{{ message }}</p>
-            {% endfor %}
+       
 
         <p><a href="{% url 'user_authentication:resend_otp' %}">Resend OTP </a> in <span id="timer">60</span> seconds</p>
     </div>

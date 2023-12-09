@@ -63,9 +63,6 @@ class OfferForm(forms.ModelForm):
         if date_start and date_end and date_start >= date_end:
             raise forms.ValidationError("End date must be greater than the start date.")
 
-        # Check if start date is in the past
-        # if date_start and date_start < timezone.now():
-        #     raise forms.ValidationError("Start date cannot be in the past.")
 
         return cleaned_data
     

@@ -22,6 +22,12 @@ class Cart(models.Model):
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
     shopping_cart = models.ForeignKey(ShoppingCart,on_delete=models.CASCADE, null=True, blank=True)
 
+    transaction_id = models.CharField(max_length=200,null=True)
+
+
+    objects = models.Manager()  # Ensure that the objects manager is defined
+
+
     def __str__(self):
         return str(self.id)
     
@@ -47,7 +53,6 @@ class Cart(models.Model):
     
 class CartItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)    
-    variation = models.ForeignKey(ProductVariance, on_delete=models.SET_NULL, null=True, blank=True, related_name='variation') 
     order = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True, blank=True) 
     quantity = models.IntegerField(default=1, null=True, blank=True)
     # date_added = models.DateTimeField(auto_now_add=True)
@@ -59,9 +64,11 @@ class CartItem(models.Model):
         ('D', 'Delivered'),
         ('CN', 'Order Cancelled'),
         ('RT', 'Returned'),
+        ('C', 'Cart Added'),
+
     ]
     
-    delivery_status = models.CharField(max_length=3, choices=ORDER_STATUS_CHOICES, default='PL')
+    delivery_status = models.CharField(max_length=3, choices=ORDER_STATUS_CHOICES, default='C')
 
     
     @property

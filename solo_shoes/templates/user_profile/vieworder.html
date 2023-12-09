@@ -6,50 +6,50 @@
 
 
 <div class="container">
-    <h2>My Orders</h2>
+    <h2>Order Details</h2>
     {% if order %}
-    {% for order in order %}
+    
     <div class="card mb-3 p-5 " style="border-radius: 7px; background:#f3f3f9;">
         <div class="card-header">
             <div class="d-flex justify-content-between mb-2">
-                <!-- <div>
-                    <p style="font-size: 16px;">Order Date:</p>
-                    <p style="font-size: 18px;"><b>{{ order.date_added }}</b></p>
-                </div> -->
                 <div>
-                    <a href="{% url 'user_profile:view_order' order.id %}" >View order</a>
-
+                    <p style="font-size: 16px;">Ordered on</p>
+                    <p style="font-size: 18px;"><b>{{ order.date_added }}</b></p>
+                </div>
+                <div>{% if order.delivery_status != 'CN' %}
+                    <a href="{% url 'user_profile:generate_invoice' order.id %}" target="_blank" download>Download Invoice</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
         <hr class="m-0 mb-1">
         <div class="row col-12 d-flex mb-0 p-5 ">
-            {% for order_item in order.cartitem_set.all %}
+            {% for cart_item in order.cartitem_set.all %}
+            
             <div class="mb-5">
                 <div class="col-md-3 col-12 bg-white d-flex align-items-center" style="border-radius: 6px;">
-                    <img class="" src="{{ order_item.product.productimage_set.first.image.url }}"
+                    <img class="" src="{{ cart_item.product.productimage_set.first.image.url }}"
                         alt="{{ order_item.product.name }}">
                 </div>
                 <div class="col-9 pl-5 mt-2">
-                    <h5 class="card-title">{{ order_item.product.product_name }}</h5>
+                    <h5 class="card-title">{{ cart_item.product.product_name }}</h5>
                     
-                    <!-- <p class="card-text">
-                        Quantity: <b>{{ order_item.quantity }}</b><br>
-                        <i class="fa-solid fa-file-invoice-dollar"></i> {{ order.payment_method }}
-                    </p> -->
+                    <p class="card-text">
+                        Quantity: <b>{{ cart_item.quantity }}</b><br>
+                        Payment Method<i class="fa-solid fa-file-invoice-dollar"></i> {{ order.payment_method }}
+                    </p>
 
-                    <!-- <h5 class="card-title mb-2">₹ {{ order_item.get_total }} </h5> -->
-                    <!-- <div class="card-footer row "
-                        style="background: #F3F3F9; display: flex; justify-content: space-between; align-items: center; width: 100%;">                   
-                    </div> -->
+                    <h5 class="card-title mb-2">₹ {{ cart_item.get_total }} </h5>
+                   
                 </div>
-                <div class="mb-3">{% if order_item.delivery_status == 'CN' %}
+                <div class="mb-3">{% if cart_item.delivery_status == 'CN' %}
                     <span class="mt-1 label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
-                    {% elif order_item.delivery_status == 'D' %}
+                    {% elif cart_item.delivery_status == 'D' %}
                     <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
-        
+                    {% elif cart_item.delivery_status == 'SH' %}
+                    <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
                     {% else %}
-                    <a href="{% url 'user_profile:cancel_order' cart_id=order_item.id %}" >Cancel Order</a>
+                    <a href="{% url 'user_profile:cancel_order' cart_id=cart_item.id %}" >Cancel Order</a>
                     {% endif %}
                 </div>
                 <div class="card-footer row "
@@ -61,19 +61,20 @@
 
         </div>
         <div class="col-12 row d-flex justify-content-between ">
-            <!-- <h6 class="mx-5">Delivery to : <b>{{ order.shipping_address.full_name }},{{ order.shipping_address.address_lines }}</b></h6> -->
+            <h6 class="mx-5">Delivery to : <b>{{ order.shipping_address.full_name }},{{ order.shipping_address.address_lines }},<br>
+                {{ order.shipping_address.city }}, {{ order.shipping_address.state }},{{ order.shipping_address.pin_code }},<br>
+                {{ order.shipping_address.mobile }}
+            </b></h6>
             <h5 class="mx-5">Total : <b>₹{{ order.get_cart_total }}</b></h5>
         </div>
         
     </div>
-    {% endfor %}
+   
+    {% endif %}
+</div>
 
-</div>
-<br>
-{% else %}
-<h1>No orders found.</h1>
-{% endif %}
-</div>
+
+
 
 
 
