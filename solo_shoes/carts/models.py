@@ -1,5 +1,5 @@
 from django.db import models
-from custom_admin_panel.models import Product, ProductVariance
+from custom_admin_panel.models import Product
 from django.contrib.auth.models import User
 from store.models import Offer, OfferCategory
 from user_profile.models import ShippingAddress
@@ -10,10 +10,32 @@ from django.utils import timezone
 class ShoppingCart(models.Model):
     session_key = models.CharField(max_length=32, unique=True)
 
+class Coupon(models.Model):
+    coupon_code = models.CharField(max_length=20, unique=True)
+    valid_from = models.DateTimeField(default=timezone.now)
+    valid_till = models.DateTimeField()
+    is_expired = models.BooleanField(default=False)
+    discount_price = models.PositiveIntegerField(default=100)
+    minimum_amount = models.IntegerField(default=500)
+    used_by = models.ManyToManyField(User, blank=True) 
+
+
+    def __str__(self):
+        return self.coupon_code
+    
+    def is_user_eligible(self, user):
+        return user not in self.used_by.all() 
+
+    def mark_as_used(self, user):
+        self.used_by.add(user)
+        self.save()   
+
+
 class Cart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE, null=True, blank=True)
     date_added = models.DateTimeField(default=timezone.now)
     complete = models.BooleanField(default=False, null=True, blank=False)
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL,null=True,blank=True)
     PAYMENT_METHOD_CHOICES = (
         ('COD', 'Cash on Delivery'),
         ('RAZ', 'Paid With Razorpay'),       
@@ -36,6 +58,9 @@ class Cart(models.Model):
     def get_cart_total(self):
         orderitems = self.cartitem_set.all()
         total = sum(item.get_total for item in orderitems)
+        if self.coupon:
+            if self.coupon.minimum_amount < total:
+                return total-self.coupon.discount_price
         
         return total
 
@@ -93,6 +118,8 @@ class CartItem(models.Model):
         # Calculate the discounted price
         discounted_price = self.product.price - (self.product.price * (discount_percentage / 100))
         total = discounted_price * self.quantity
+        
+
 
         return total
 

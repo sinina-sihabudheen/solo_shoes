@@ -1,9 +1,41 @@
 from django.utils import timezone
 from django import forms
 from .models import Product,Category,ProductImage
-from carts.models import Cart, CartItem
+from carts.models import Coupon,Cart, CartItem
 from store.models import Offer, OfferCategory
 
+
+
+class CouponForm(forms.ModelForm):
+    class Meta:
+        model = Coupon
+        fields = ('coupon_code', 'valid_from', 'valid_till', 'discount_price', 'minimum_amount',)
+        widgets = {
+            'coupon_code': forms.TextInput(attrs={'class': 'form-control ', 'style': 'color: white;'}),
+            'valid_from': forms.TextInput(attrs={'type': 'datetime-local','class': 'form-control ', 'style': 'color: white;'}),
+            'valid_till': forms.TextInput(attrs={'type': 'datetime-local','class': 'form-control ', 'style': 'color: white;'}),
+            'discount_price': forms.TextInput(attrs={'class': 'form-control ', 'style': 'color: white;'}),
+            'minimum_amount': forms.TextInput(attrs={'class': 'form-control ', 'style': 'color: white;'}),
+            
+                        
+        }
+    def clean(self):
+        cleaned_data = super().clean()
+        valid_from = cleaned_data.get('valid_from')
+        valid_till = cleaned_data.get('valid_till')
+
+        # Check if end date is greater than start date
+        if valid_from and valid_till and valid_from >= valid_till:
+            raise forms.ValidationError("End date must be greater than the start date.")
+
+
+        return cleaned_data
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['valid_from'].input_formats = ['%Y-%m-%dT%H:%M', ]  
+        self.fields['valid_till'].input_formats = ['%Y-%m-%dT%H:%M', ]    
+    
     
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -48,10 +80,10 @@ class OfferForm(forms.ModelForm):
         model = Offer
         fields = ('offer_name','discount_percentage','date_start','date_end',)
         widgets = {
-            'offer_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'discount_percentage': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_start': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-            'date_end': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'offer_name': forms.TextInput(attrs={'class': 'form-control', 'style': 'color: white;'}),
+            'discount_percentage': forms.TextInput(attrs={'class': 'form-control', 'style': 'color: white;'}),
+            'date_start': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control', 'style': 'color: white;'}),
+            'date_end': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control', 'style': 'color: white;'}),
         }
 
     def clean(self):

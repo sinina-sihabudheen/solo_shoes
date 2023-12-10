@@ -1,0 +1,96 @@
+{% load static %}
+{% include 'custom_admin_panel/inc/header.html' %}
+<div class="main-panel">
+    <div class="content-wrapper">
+        <div class="row">
+            <div class="col-12 grid-margin">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Coupons</h4>  
+                        <hr class="white-line my-4">
+                        <a href="{% url 'custom_admin_panel:add_coupon' %}"
+                                class="btn btn-outline-success">
+                                &nbsp;<b>+</b>&nbsp;Add Coupon
+                            </a>
+                        
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Coupon Code</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Discount Amount</th>
+                                        <th>Minimum Amount</th>
+                                        <th>Is Expired</th>
+                                        <th>Used_By</th>
+                                        <th>Action</th>
+                                       
+                                        
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for coupon in coupons %}
+                                    
+                                            <tr>
+                                                <td>{{ coupon.coupon_code }}</td>
+                                                <td>{{ coupon.valid_from }}</td>
+                                                <td>{{ coupon.valid_till }}</td>
+                                                <td>{{ coupon.discount_price }}</td>
+                                                <td>{{ coupon.minimum_amount }}</td>
+                                                <td>{{ coupon.is_expired }}</td>
+                                                <td>
+                                                    {% if coupon.used_by.exists %}
+                                                        <select>
+                                                            {% for user in coupon.used_by.all %}
+                                                                <option value="{{ user.id }}">{{ user.username }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    {% else %}
+                                                        No Users
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'custom_admin_panel:edit_coupon' coupon.id %}" class="btn btn-inverse-info">Edit Coupon</a>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'custom_admin_panel:remove_coupon' coupon.id %}" class="btn btn-inverse-info">Remove Coupon</a>
+                                                </td>
+                                                
+                                            </tr>
+                                            
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- plugins:js -->
+<script src="{% static 'adminside/assets/vendors/js/vendor.bundle.base.js' %}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<script src="{% static 'adminside/assets/vendors/chart.js/Chart.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/progressbar.js/progressbar.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap.min.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/jvectormap/jquery-jvectormap-world-mill-en.js' %}"></script>
+<script src="{% static 'adminside/assets/vendors/owl-carousel-2/owl.carousel.min.js' %}"></script>
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script src="{% static 'adminside/assets/js/off-canvas.js' %}"></script>
+<script src="{% static 'adminside/assets/js/hoverable-collapse.js' %}"></script>
+<script src="{% static 'adminside/assets/js/misc.js' %}"></script>
+<script src="{% static 'adminside/assets/js/settings.js' %}"></script>
+<script src="{% static 'adminside/assets/js/todolist.js' %}"></script>
+<!-- endinject -->
+<!-- Custom js for this page -->
+<script src="{% static 'adminside/assets/js/dashboard.js' %}"></script>
+<!-- End custom js for this page -->
+
+</body>
+</html>

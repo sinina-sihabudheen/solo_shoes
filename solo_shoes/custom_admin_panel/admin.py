@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Category,Product,ProductImage,Size,ProductVariance
+from .models import Category,Product,ProductImage
+from .models import Offer, OfferCategory
 # Register your models here.
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['category_name','is_active']
@@ -16,24 +17,10 @@ class ProductImageAdmin(admin.ModelAdmin):
 
 admin.site.register(ProductImage,ProductImageAdmin)
 
-class ProductVarianceAdmin(admin.ModelAdmin):
-    list_display = ['product','size','stock']
-
-admin.site.register(ProductVariance,ProductVarianceAdmin)
-
-class SizeAdmin(admin.ModelAdmin):
-    list_display = ['size']
-
-admin.site.register(Size,SizeAdmin)
-
-
-
-
-from .models import Offer, OfferCategory
-
-
 admin.site.register(Offer)
 admin.site.register(OfferCategory)
+
+
 
 
 

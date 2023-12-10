@@ -26,6 +26,29 @@
             <div class="page-content">
             	<div class="checkout">
 	                <div class="container">
+						<div class="cart-bottom">
+							<div class="cart-discount">
+								<form method="post" action="{% url 'carts:apply_coupon' cart.id %}">
+									{% if messages %}
+									{% for message in messages %}
+									<div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+									{% endfor %}
+									{% endif %}
+									{% csrf_token %}
+									<div class="input-group">
+										<input type="text" class="form-control" required placeholder="coupon code" name="coupon">
+										<div class="input-group-append">
+											<button class="btn btn-outline-primary-2" type="submit"><i class="icon-long-arrow-right"></i></button>
+										</div><!-- .End .input-group-append -->
+									</div><!-- End .input-group -->
+									{% if cart.coupon %}
+									<a href="{% url 'carts:remove_coupon' cart.id %}" class="btn btn-success">{{ cart.coupon.coupon_code }}</a>
+									{% endif %}
+								</form>
+							</div><!-- End .cart-discount -->
+					
+							<!-- <a href="#" class="btn btn-outline-dark-2"><span>UPDATE CART</span><i class="icon-refresh"></i></a> -->
+						</div><!-- End .cart-bottom -->
             			
 						
             			<form action="{% url 'carts:place_order' %}" method="post">
@@ -68,10 +91,10 @@
 														</tr>
 													{% endfor %}
 	
-													<tr class="summary-subtotal">
+													<!-- <tr class="summary-subtotal">
 														<td>Subtotal:</td>
 														<td>{{ '₹ ' }}{{ cart.get_cart_total }}</td>
-													</tr><!-- End .summary-subtotal -->
+													</tr>End .summary-subtotal -->
 	
 													<tr>
 														<td>Shipping:</td>
@@ -86,6 +109,7 @@
 												</tbody>
 	
 											</table><!-- End .table table-summary -->
+											{% if cart_items %}
 	
 											<div class="accordion-summary" id="accordion-payment">
 																						
@@ -107,26 +131,30 @@
 														</label>
 													</div>
 													
+													
 												</div>																						
 											</div><!-- End .accordion -->
-										{% if cart_items %}
+										
 										
 											<button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">
 												<span class="btn-text">Place Order</span>
 												<span class="btn-hover-text">Proceed to Checkout</span>
 											</button>
 											{% else %}<h4>Cart Is Empty</h4>
+											<a href="{% url 'store:shop' %}" class="btn btn-outline-dark-2 btn-block mb-3"><span>CONTINUE SHOPPING</span><i class="icon-refresh"></i></a>
+
 											{% endif %}
 										</form>
 										<!-- Address form (initially hidden) -->
 										<!-- <button type=""  class="btn btn-primary payWithRazorpay w-100 mt-2">
 											Pay with RazorPay
 										</button> -->
+										{% if cart_items %}
 										<button type="submit" class="btn btn-outline-primary-2 btn-order btn-block payWithRazorpay"   id="place-order-Online-button"  data-name="{{ user_info.name }}" data-email="{{ user_info.email }}"  data-value="razorpay">
-											<span class="btn-text">Place Ordekkkkkr</span>
-											<span class="btn-hover-text">Proceed to Checkoutjuu</span>
+											<span class="btn-text">Place Order with Razorpay</span>
+											<span class="btn-hover-text">Proceed to Checkout</span>
 										</button>
-										
+										{% endif %}
 									</div>
 											</div><!-- End .summary -->
 									</aside><!-- End .col-lg-3 -->

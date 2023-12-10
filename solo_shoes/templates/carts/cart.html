@@ -57,6 +57,8 @@
 											<td class="price-col">
 												{% if cart_item.offer.active %}
 													{{ '₹ ' }}{{ cart_item.discounted_price|floatformat:2 }}
+												{% elif cart_item.product.category.offer.active %}
+													{{ '₹ ' }}{{ cart_item.discounted_price|floatformat:2 }}
 												{% else %}
 													{{ '₹ ' }}{{ cart_item.product.price|floatformat:2 }}
 												{% endif %}
@@ -100,20 +102,7 @@
 								</tbody>
 							</table><!-- End .table table-wishlist -->
 						
-							<div class="cart-bottom">
-								<div class="cart-discount">
-									<form action="#">
-										<div class="input-group">
-											<input type="text" class="form-control" required placeholder="coupon code">
-											<div class="input-group-append">
-												<button class="btn btn-outline-primary-2" type="submit"><i class="icon-long-arrow-right"></i></button>
-											</div><!-- .End .input-group-append -->
-										</div><!-- End .input-group -->
-									</form>
-								</div><!-- End .cart-discount -->
-						
-								<!-- <a href="#" class="btn btn-outline-dark-2"><span>UPDATE CART</span><i class="icon-refresh"></i></a> -->
-							</div><!-- End .cart-bottom -->
+							
 						</div><!-- End .col-lg-9 -->
 	                		<aside class="col-lg-3">
 	                			<div class="summary summary-cart">
@@ -137,30 +126,23 @@
 												</tr>
 												
 												<tr class="summary-shipping-row">
-												<td>
-												<div class="custom-control custom-radio">
-												<input type="radio" id="free-shipping" name="shipping" class="custom-control-input">
-												<label class="custom-control-label" for="free-shipping">Free Shipping</label>
-												</div>
-												</td>
-												<td id="shipping-cost">{{ '₹ ' }}0.00</td>
-												</tr>
-												
-												
-												
-												
-												
-												
-												
+													<td>
+														<div class="custom-control custom-radio">
+														<input type="radio" id="free-shipping" name="shipping" class="custom-control-input" checked>
+														<label class="custom-control-label" for="free-shipping">Free Shipping</label>
+														</div>
+													</td>
+													<td id="shipping-cost">{{ '₹ ' }}0.00</td>
+												</tr>	
 												<tr class="summary-total">
-												<td>Grand Total:</td>
-												<td id="grand-total">{{ '₹ ' }}{{ cart.get_cart_total }}</td>
+													<td>Grand Total:</td>
+													<td id="grand-total">{{ '₹ ' }}{{ cart.get_cart_total }}</td>
 												</tr><!-- End .summary-total -->
-												</tbody>
-												</table><!-- End .table table-summary -->
+											</tbody>
+											</table><!-- End .table table-summary -->
 												
-												<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-												<script>
+											<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+											<!-- <script>
 												$(document).ready(function () {
 													// Initial values
 													var subtotal = parseFloat("{{ cart_items.order.0.get_cart_total }}");
@@ -193,11 +175,11 @@
 													// Initial total update
 													updateTotal();
 												});
-												</script>
+												</script> -->
 												
 
-	                				<a href="{% url 'carts:checkout' %}" class="btn btn-outline-primary-2 btn-order btn-block">PROCEED TO CHECKOUT</a>
-	                			</div><!-- End .summary -->
+										<a href="{% url 'carts:checkout' %}" class="btn btn-outline-primary-2 btn-order btn-block">PROCEED TO CHECKOUT</a>
+									</div><!-- End .summary -->
 
 		            			<a href="{% url 'store:shop' %}" class="btn btn-outline-dark-2 btn-block mb-3"><span>CONTINUE SHOPPING</span><i class="icon-refresh"></i></a>
 	                		</aside><!-- End .col-lg-3 -->

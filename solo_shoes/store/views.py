@@ -56,11 +56,10 @@ def shop(request, category=None):
         else:
             product.discounted_price = None
     
-        # print(f"Product: {product.product_name}, Discounted Price: {product.discounted_price}")
 
     context = {
         'products': paged_products,
-        
+        # 'paged_products' : paged_products,
         'category': category,
     }
     return render(request, 'store/shop.html', context)

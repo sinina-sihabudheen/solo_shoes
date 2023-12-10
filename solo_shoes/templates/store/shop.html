@@ -22,7 +22,7 @@
                                     <div class="col-6 col-md-4 col-lg-4">
                                         <div class="product product-7 text-center">
                                             <figure class="product-media">
-												{% if product.offer and product.offer.active %}
+												{% if product.offer %}
 												<span class="product-label label-primary">{{ product.offer.offer_name }}</span>
                                         		<span class="product-label label-sale">{{ product.offer.discount_percentage|floatformat:.2 }}% off</span>
 												{% endif %}

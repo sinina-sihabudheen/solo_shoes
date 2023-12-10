@@ -44,10 +44,11 @@ urlpatterns = [
     path('get_sales_data/<str:period>/', views.get_sales_data, name='get_sales_data'),
     path('sales_details/', views.sales_details, name='sales_details'),
     # path('generate_sales/', views.generate_sales, name='generate_sales'),
-
-
-
-
+    path('coupon_list/', views.coupon_list, name='coupon_list'),
+    path('add_coupon/', views.add_coupon, name='add_coupon'),
+    path('edit_coupon/<int:coupon_id>', views.edit_coupon, name='edit_coupon'),
+    path('remove_coupon/<int:coupon_id>', views.remove_coupon, name='remove_coupon'),
+    
    
 ]
 

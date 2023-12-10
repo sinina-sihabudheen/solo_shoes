@@ -1,17 +1,6 @@
 from typing import Any
 from django.db import models
 from store.models import Offer,OfferCategory
-# from django.contrib.auth.models import AbstractUser, Group, Permission
-
-
-# class CustomUser(AbstractUser):
-#     referral_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    
-#     # Add related_name to avoid clashes
-#     groups = models.ManyToManyField(Group, related_name='custom_user_groups')
-#     user_permissions = models.ManyToManyField(Permission, related_name='custom_user_permissions')
-
-
 
 
 class Category(models.Model):
@@ -55,20 +44,9 @@ class ProductImage(models.Model):
     def __str__(self):
         return self.image.url
     
-class Size(models.Model):
-    size = models.CharField(max_length=50)    
-    
-    def _str_(self):
-        return self.size
 
     
-class ProductVariance(models.Model):
-    product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    size = models.ForeignKey(Size,on_delete=models.CASCADE)
-    stock = models.PositiveIntegerField(default=0)
 
-    def _str_(self):
-        return f"{self.product.product_name} - {self.size.size}"
 
 
     

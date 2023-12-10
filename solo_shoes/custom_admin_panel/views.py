@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from decimal import Decimal
 from datetime import datetime, timezone
 from django.utils import timezone
-from carts.models import Cart, CartItem
+from carts.models import Cart, CartItem, Coupon
 # from custom_admin_panel.helpers import render_to_pdf
 from store.models import Offer, OfferCategory
 from .models import Category, Product, ProductImage
@@ -24,7 +24,7 @@ from django.db.models.functions import TruncWeek, TruncMonth, TruncDay
 
 
 from user_profile.forms import OrderForm
-from .forms import OfferForm,OfferCategoryForm
+from .forms import OfferForm,OfferCategoryForm, CouponForm
 
 
 # from django.urls import reverse_lazy
@@ -559,38 +559,48 @@ def sales_details(request):
        
     return render(request, 'custom_admin_panel/salespdf.html', context)
 
-# def generate_sales(request):
-#     order = CartItem.objects.all()
-#     sales_number = str(random.randint(100000, 999999))
+def coupon_list(request):
+    coupons= Coupon.objects.all()
+    context={
+        'coupons':coupons
+        }
+    return render(request,'custom_admin_panel/coupon.html',context)
 
+def add_coupon(request):
+    if request.method == 'POST':
+        form = CouponForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('custom_admin_panel:coupon_list')
+    else:
+        form = CouponForm()
+    
+    return render(request, 'custom_admin_panel/coupon_form.html', {'form': form})
 
-#     context = {
-#         'order': order,
-#         'sales_number':sales_number,
-       
-#     }
- 
+def edit_coupon(request,coupon_id):
 
-#     pdf = render_to_pdf('custom_admin_panel/salespdf.html', context)
-#     if pdf:
-#         response = HttpResponse(pdf, content_type='application/pdf')
-#         filename =f"sales_{order.id}.pdf"
-#         content = "inline; filename='%s'" % filename
-#         response['Content-Disposition'] = content
-#         return response
-#     else:
-#         print("Error generating the PDF.")
-#         return HttpResponse("Error generating the invoice.")
+    coupon = get_object_or_404(Coupon, pk=coupon_id)
 
+    if request.method == 'POST':
+            form = CouponForm(request.POST, request.FILES, instance=coupon)
+            if form.is_valid():
+                form.save()
+                return redirect('custom_admin_panel:coupon_list')
+    else:
+            form = CouponForm(instance=coupon)
+        
+    context = {
+                'form': form,
+                'coupon': coupon,
 
+        }
+        
+    return render(request, 'custom_admin_panel/coupon_form.html', context)
 
-
-
-
-
-
-
-
+def remove_coupon(request,coupon_id):
+    coupon = get_object_or_404(Coupon, id=coupon_id)
+    coupon.delete()
+    return redirect('custom_admin_panel:coupon_list')
 
 
 @never_cache
