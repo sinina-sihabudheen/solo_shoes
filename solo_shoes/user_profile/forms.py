@@ -2,7 +2,7 @@ import re
 from django.contrib.auth.forms import PasswordChangeForm, UserChangeForm
 from django import forms
 from django.contrib.auth import get_user_model
-from .models import ShippingAddress, OrderItem
+from .models import ShippingAddress
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):
@@ -65,7 +65,3 @@ class AddressForm(forms.ModelForm):
             raise forms.ValidationError("Enter a valid mobile number!!!")
         return mobile
 
-class OrderForm(forms.ModelForm):
-    class Meta:
-        model = OrderItem
-        fields = ['delivery_status']

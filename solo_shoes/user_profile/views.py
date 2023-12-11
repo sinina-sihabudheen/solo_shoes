@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from carts.models import Cart, CartItem
 from .forms import CustomPasswordChangeForm, CustomUserDetailsForm, AddressForm
 from django.contrib.auth import update_session_auth_hash
-from .models import ShippingAddress,Order,OrderItem
+from .models import ShippingAddress, Wallet
 from .helpers import render_to_pdf
 
 
@@ -148,6 +148,18 @@ def cancel_order(request, cart_id):
 
         cart_item.save()
         messages.success(request, 'Your order is successfully cancelled.')
+        if cart_item.order.payment_method == "RAZ" or cart_item.order.payment_method == "WAL":
+
+            refund_amount = cart_item.get_total
+            print(refund_amount)
+    
+            user_wallet = Wallet.objects.get(user=request.user)
+            user_wallet.balance += refund_amount
+            user_wallet.save()
+            print(user_wallet.balance)
+        
+       
+     
     else:
 
         messages.error(request, 'Invalid order or you are not authorized to cancel this order.')
@@ -177,7 +189,19 @@ def generate_invoice(request, cart_id):
     else:
         print("Error generating the PDF.")
         return HttpResponse("Error generating the invoice.")
+    
 
+@login_required
+def wallet(request):
+    if request.user.is_authenticated:
+        wallet = Wallet.objects.get(user=request.user)       
+     
+        
+    context = {
+        'wallet': wallet,
+        
+    }
+    return render(request, 'user_profile/wallet.html',context)
 
 
 

@@ -38,7 +38,9 @@ class Cart(models.Model):
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL,null=True,blank=True)
     PAYMENT_METHOD_CHOICES = (
         ('COD', 'Cash on Delivery'),
-        ('RAZ', 'Paid With Razorpay'),       
+        ('RAZ', 'Paid With Razorpay'), 
+        ('WAL', 'Paid with Wallet'),
+
     )
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES,  null=True, blank=True)
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
@@ -68,7 +70,7 @@ class Cart(models.Model):
     def get_cart_items(self):
         orderitems = self.cartitem_set.all()
         total = sum(item.quantity for item in orderitems)
-        print("total kko so fjfsohfo")
+        
         return total
 
     

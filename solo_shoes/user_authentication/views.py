@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.db import IntegrityError
 from django.views.decorators.cache import never_cache
 from custom_admin_panel.models import Product
+from user_profile.models import Wallet
 from store.models import Offer, OfferCategory
 import random
 import string
@@ -57,6 +58,7 @@ def home(request):
       }
       return render(request, 'user_authentication/index.html' , context)
 
+
 def register(request):
     if request.method == "POST":
         first_name = request.POST.get('register-firstname')
@@ -79,7 +81,7 @@ def register(request):
             request.session['email'] = email
 
             send_otp(request)
-            print("OTP sent")
+            
             return render(request, 'user_authentication/otp.html', {'email': email})
         except IntegrityError:
             # Handle the case where the username is not unique
@@ -99,7 +101,7 @@ def loginn(request):
          return redirect('user_authentication:home')
 
     if request.method == 'POST':
-        print(request.POST)  # Add this line to inspect form data
+      
         username = request.POST['signin-username']
         pass1 = request.POST['signin-password']
 
@@ -107,10 +109,10 @@ def loginn(request):
 
         if user is not None:
             login(request, user)
-            # Redirect to the home page upon successful login
+            
             return redirect('user_authentication:home')
         else:
-            # Set an error message upon failed login and redirect to the signin page
+           
             messages.error(request, 'Invalid Credentials!!')
             return redirect('user_authentication:login')
 
@@ -119,7 +121,7 @@ def loginn(request):
 @never_cache
 def forgot_password(request):
     if request.method == 'POST':
-        email = request.POST.get('email')  # get the email from form
+        email = request.POST.get('email')  
 
         is_email_exist = User.objects.filter(email=email).exists()
 
@@ -220,8 +222,6 @@ def otp_verification(request):
             messages.error(request, "OTP has expired. Please request a new OTP.")
             
         return render(request, 'userauths/otp.html')
-
-
 
 
 def send_otp(request):

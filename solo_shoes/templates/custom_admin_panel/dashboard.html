@@ -99,20 +99,24 @@
                 <div class="card-body">
                   <h4 class="card-title">Transaction History</h4>
                   <input value="{{ cod_count }}" id="cod" hidden>
+                  <input value="{{ raz_count }}" id="raz" hidden>
+
                       <canvas id="myChart" style="width:80%;max-width:500px;  "></canvas>    
                   {% for order in all_orders reversed %}
                       <div class="bg-gray-dark d-flex d-md-block d-xl-flex flex-row py-3 px-4 px-md-3 px-xl-4 rounded mt-3">
                           <div class="text-md-center text-xl-left">
                               <h6 class="mb-1">Transfer as {{ order.payment_method }}</h6>
-                              <p class="text-muted mb-0">{{ order.date_ordered|date:"j M Y, g:i A" }}</p>
+                              <p class="text-muted mb-0">{{ order.date_added|date:"j M Y, g:i A" }}</p>
                           </div>
                           <div class="align-self-center flex-grow text-right text-md-center text-xl-right py-md-2 py-xl-0">
                               <h6 class="font-weight-bold mb-0"> ₹ 
                                 
-                                  {% if order.payment_method == 'COD' %}
-                                  
-                                      {{ order.get_cart_total }}
-                                      {% endif %}
+                                  {% if order.payment_method == 'COD' %}                                  
+                                      {{ cod_total }}
+                                  {% endif %}
+                                  {% if order.payment_method == 'RAZ' %}                                  
+                                      {{ raz_total }}
+                                  {% endif %}
                                   
                               </h6>
                           </div>
@@ -152,7 +156,9 @@
                                 <div class="mr-auto text-sm-right pt-2 pt-sm-0">
                                     <p class="text-muted">{{ order_item.order.date_added }}</p>
                                     <p class="text-muted mb-0"> {{ order_item.order.user.username }} <span class="mdi mdi-account-box-outline"></span></p>
-                                </div>
+                                    <p class="text-muted">Payment : {{ order_item.order.payment_method }}</p>
+
+                                  </div>
                             </div>
                         </div>
                         {% endfor %}
@@ -198,14 +204,16 @@
           src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
           let COD = document.getElementById("cod").value
+          let RAZ = document.getElementById("raz").value
+
          
 
     console.log(COD);
         var data = {
-            labels: ['COD'],
+            labels: ['COD','RAZ'],
             datasets: [{
-              data: [COD],
-              backgroundColor: ['#FFCE56']
+              data: [COD,RAZ],
+              backgroundColor: ['#FFCE56', '#36A2EB']
             }]
           };
 

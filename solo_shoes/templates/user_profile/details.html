@@ -10,6 +10,16 @@
         			<h1 class="page-title">Account Details<span>{{request.user.username}}</span></h1>
         		</div><!-- End .container -->
         	</div><!-- End .page-header -->
+            <nav aria-label="breadcrumb" class="breadcrumb-nav mb-3">
+                <div class="container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'user_authentication:home' %}">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'user_profile:profile' %}">My Profile</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Account Details</li>
+        
+                    </ol>
+                </div><!-- End .container -->
+            </nav><!-- End .breadcrumb-nav -->
             
             <div class="col-sm-6">
                 <div class="card">

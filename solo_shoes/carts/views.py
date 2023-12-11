@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 # from django.urls import reverse
 from custom_admin_panel.models import Product
@@ -6,12 +6,13 @@ from carts.models import Cart, CartItem, ShoppingCart, Whishlist
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from store.models import Offer, OfferCategory
-from user_profile.models import ShippingAddress
+from user_profile.models import ShippingAddress, Wallet
 from django.contrib.auth.decorators import login_required
 from user_profile.forms import AddressForm
 # from django.db import transaction 
 from decimal import Decimal
 from .models import Cart, CartItem, Coupon
+from django.utils import timezone
 
 
 
@@ -191,7 +192,7 @@ def checkout(request):
         cart = Cart.objects.get(user=request.user, complete = False)
         cart_items = CartItem.objects.filter(order=cart)
         user_address = ShippingAddress.objects.filter(user=request.user, status=True).first()
-        print(user_address)
+        
 
         # Calculate total and quantity
         total = 0
@@ -252,6 +253,34 @@ def apply_coupon(request,cart_id):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     return redirect('carts:checkout')      
 
+@login_required
+def apply_coupon(request, cart_id):
+    cart = get_object_or_404(Cart, id=cart_id)
+    
+    if request.method == 'POST':
+        coupon_code = request.POST.get('coupon')
+        try:
+            coupon = Coupon.objects.get(coupon_code__icontains=coupon_code)
+            
+            if coupon.valid_till < timezone.now():
+                messages.error(request, 'Coupon has expired.', extra_tags='danger')
+            elif cart.get_cart_total < coupon.minimum_amount:
+                messages.error(request, f'Amount should be greater than {coupon.minimum_amount}', extra_tags='danger')
+            elif not coupon.is_user_eligible(request.user):
+                messages.error(request, 'You have already used this coupon.', extra_tags='danger')
+            elif cart.coupon:
+                messages.error(request, 'Coupon already applied.', extra_tags='danger')
+            else:
+                cart.coupon = coupon
+                cart.save()
+                messages.success(request, 'Coupon successfully applied.', extra_tags='success')
+
+        except Coupon.DoesNotExist:
+            messages.error(request, 'Invalid coupon code. Please try again.', extra_tags='danger')
+
+    return redirect('carts:checkout') 
+
+
 def remove_coupon(request,cart_id):          
     cart = Cart.objects.get(id=cart_id)
     cart.coupon=None
@@ -261,11 +290,11 @@ def remove_coupon(request,cart_id):
 
 
 def place_order(request):
-    print("COD")
     if request.user.is_authenticated:
         if request.method == 'POST':
-            selected_payment_method = request.POST.get('payment_method')
+            selected_payment_method = request.POST.get('payment')
             selected_address_id = request.POST.get('shipping_address')
+            print("user address place order:",selected_address_id)
 
             try:
                 selected_address = ShippingAddress.objects.get(id=selected_address_id)
@@ -285,8 +314,36 @@ def place_order(request):
                 shipping_address=selected_address,
                 payment_method=selected_payment_method,  # Set the payment method as needed
             )
-            
+            current_cart = Cart.objects.select_for_update().get(user=request.user, complete=False)
+            if current_cart.coupon:
+                cart.coupon = current_cart.coupon
+
             cart.save()
+
+            if selected_payment_method == 'cod':
+                cart.payment_method='COD'
+                
+            elif selected_payment_method == 'wallet':
+                cart.payment_method='WAL'
+                print("WALLET!!!!")
+            if cart.coupon:
+                user_wallet = Wallet.objects.get(user=request.user)
+                total_amount = sum(cart_item.get_total for cart_item in cart_items)
+                print("total amount",total_amount)
+                total_amount -= cart.coupon.discount_price
+                user_wallet.balance -= total_amount
+                cart.coupon.mark_as_used(request.user) 
+                user_wallet.save()
+            else:
+                user_wallet = Wallet.objects.get(user=request.user)
+                total_amount = sum(cart_item.get_total for cart_item in cart_items) 
+                print("total amount no coupon",total_amount)   
+                user_wallet.balance -= total_amount
+                print("wallet balance no coupon",user_wallet.balance)
+                user_wallet.save()    
+                    
+
+                
 
             for cart_item in cart_items:
                 cart_item.order = cart
@@ -342,9 +399,9 @@ def razorpaycheck(request):
 def place_order_raz(request):
     if request.method == 'POST':
         selected_address_id = request.POST.get('selectedAddressId')
-        # order_notes = request.POST.get('orderNotes')
-        transaction_id = request.POST.get('transaction_id')
-        
+        print("razor pay place order: address id:",selected_address_id)
+
+        transaction_id = request.POST.get('transaction_id')       
         
 
         try:
@@ -385,50 +442,3 @@ def order_placed(request):
 
 
 
-
-
-# def place_order_raz(request):
-#     print("Razorpay working")
-#     if request.method == 'POST':
-#         selected_address_id = request.POST.get('selectedAddressId')
-      
-#         transaction_id = request.POST.get('transaction_id')
-        
-        
-
-#         try:
-#             selected_address = ShippingAddress.objects.get(id=selected_address_id)
-#         except ShippingAddress.DoesNotExist:
-#             return JsonResponse({'status': 'error', 'message': 'Invalid shipping address'})
-
-
-#         # Create the order
-#         order = Cart(
-#             user=request.user,
-#             payment_method='RAZ',
-#             transaction_id=transaction_id,
-#             shipping_address=selected_address,
-           
-#         )
-        
-#         print(order)
-#         order.save()
-       
-
-#         # Mark the order as complete
-#         order.complete = True
-#         order.save()
-
-#         # # Update order items (if needed)
-#         # cart_items = CartItem.objects.filter(order__user=request.user, order__complete=True)
-#         # for cart_item in cart_items:
-#         #     cart_item.order = order
-#         #     cart_item.delivery_status = 'PL'
-#         #     cart_item.save()
-            
-#         #      # Empty the cart
-#         # cart_items.delete()
-
-#         return JsonResponse({'status': 'success', 'message': 'Your order has been placed successfully!'})
-
-#     return JsonResponse({'status': 'error', 'message': 'Invalid request method'})

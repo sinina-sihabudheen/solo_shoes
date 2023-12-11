@@ -38,7 +38,9 @@
                                                 <td>{{ coupon.valid_till }}</td>
                                                 <td>{{ coupon.discount_price }}</td>
                                                 <td>{{ coupon.minimum_amount }}</td>
-                                                <td>{{ coupon.is_expired }}</td>
+                                                
+                                                <td>{{ coupon.is_expired }}
+                                                </td>
                                                 <td>
                                                     {% if coupon.used_by.exists %}
                                                         <select>

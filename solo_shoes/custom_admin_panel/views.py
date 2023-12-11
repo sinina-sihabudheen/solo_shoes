@@ -21,15 +21,7 @@ from django.http import HttpResponse, JsonResponse
 # from xhtml2pdf import pisa
 from django.views.decorators.http import require_GET
 from django.db.models.functions import TruncWeek, TruncMonth, TruncDay
-
-
-from user_profile.forms import OrderForm
 from .forms import OfferForm,OfferCategoryForm, CouponForm
-
-
-# from django.urls import reverse_lazy
-
-
 
 
 # Create your views here.
@@ -53,25 +45,6 @@ def admin_login(request):
 
     return render(request,'custom_admin_panel/adminlogin.html')
 
-
-# @login_required
-# def dashboard(request):
-#     if request.user.is_authenticated and request.user.is_superuser:
-#         user = User.objects.all()
-#         query = request.GET.get('text')
-
-#         if query:
-#             emp = emp.filter(Q(first_name_icontains=query) | Q(emailicontains=query) | Q(username_icontains=query))
-
-
-
-#         context = {
-#             'user':user,
-            
-#         }
-
-#         return render(request,'custom_admin_panel/dashboard.html',context)
-#     return redirect('custom_admin_panel:adminlogin')
 
 @login_required(login_url='custom_admin_panel:adminlogin')
 def dashboard(request):
@@ -106,16 +79,23 @@ def dashboard(request):
         
         if start_date:
             all_orders = all_orders.filter(date_added__gte=start_date)
-
+        products = Product.objects.all()
         
         total_revenue = sum(order.get_cart_total for order in all_orders)
         total_sales = sum(order.get_cart_items for order in all_orders)
+        total_stock = sum(product.stock for product in products)
                      
         cod_orders = all_orders.filter(payment_method='COD')
+        raz_orders = all_orders.filter(payment_method='RAZ')
+
         cod_count = cod_orders.count()    
+        raz_count = raz_orders.count()
+
         cod_total = sum(order.get_cart_total for order in cod_orders)
-        products = Product.objects.all() 
-        total_stock = sum(product.stock for product in products)
+        raz_total = sum(order.get_cart_total for order in raz_orders)
+
+         
+        
 
         context = {
             'user':user,
@@ -124,7 +104,9 @@ def dashboard(request):
             'all_orders':all_orders,
             'all_order_items':all_order_items,
             'cod_count': cod_count,            
-            'cod_total': cod_total,        
+            'cod_total': cod_total,  
+            'raz_count': raz_count,
+            'raz_total': raz_total,      
             'filter_type': filter_type,  
             'order_delivered': order_delivered,
             'total_stock' : total_stock,
@@ -322,12 +304,14 @@ def edit_product(request, product_id):
 #Order Management...
 @login_required(login_url='custom_admin_panel:adminlogin')
 def order(request):
-    target_payment_method = 'COD'  # Change this to the desired payment method
-
-    # Fetch orders with the specified payment method along with their related items
-    orders_with_items = Cart.objects.filter(payment_method=target_payment_method).prefetch_related(
+    # target_payment_method = 'COD'  
+    
+    orders_with_items = Cart.objects.filter(complete=True).prefetch_related(
         Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
     ).all()
+    # orders_with_items = Cart.objects.prefetch_related(
+    #     Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
+    # ).all()
 
     context = {
         'orders_with_items': orders_with_items,
@@ -608,4 +592,7 @@ def admin_logout(request):
     if request.user.is_authenticated and request.user.is_superuser:
         logout(request)
     return redirect('custom_admin_panel:adminlogin')
+
+
+
 

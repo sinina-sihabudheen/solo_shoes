@@ -1,0 +1,79 @@
+
+{% load static %}
+
+        <!-- header -->
+        {% include 'user_authentication/inc/navbar.html' %}
+        
+
+
+<div class="container">
+    <div class="page-header text-center" style="background-image: url('user_auth/assets/images/page-header-bg.jpg')">
+        <div class="container">
+            <h1 class="page-title">My Wallet<span>{{request.user.username}}</span></h1>
+        </div><!-- End .container -->
+    </div><!-- End .page-header -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav mb-3">
+        <div class="container">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'user_authentication:home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'user_profile:profile' %}">My Profile</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Wallet</li>
+
+            </ol>
+        </div><!-- End .container -->
+    </nav><!-- End .breadcrumb-nav -->
+    
+    <div class="container my-5">        
+
+            <div class="col-lg-6 col-12">
+                <div class="card wallet-card m-auto">
+                    <div class="card-body text-white m-5 col-12 row">
+                        <div class="col-9 mt-3">
+                            <span class="text-uppercase">{{ wallet.user.username }}</span>
+                            <h6 class="text-white mt-0" style="font-size: 24px;"> {{ wallet.wallet_id }}</h6>
+                        </div>
+                        <div class="col-3 d-flex justify-content-center mt-4">
+                            <h6 class="text-white " style="font-size: 25px;"><i class="fa-light fa-wifi fa-rotate-90"></i></h6>
+                        </div>
+                        <div class="col-7 d-flex align-items-end">
+                            <h6 class="text-light pb-1">Wallet Balance</h6>
+                        </div>
+                        <div class="col-5 d-flex align-items-end">
+                            <h4 class="text-white">₹ {{ wallet.balance }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+ 
+
+</div>
+
+
+
+
+
+
+{% include 'user_authentication/inc/footer.html' %}
+<!-- End .footer -->
+
+</div>
+<!-- End .page-wrapper -->
+<button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+<!-- Plugins JS File -->
+<script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+<!-- Main JS File -->
+<script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+</body>
+
+<!-- molla/dashboard.html  22 Nov 2019 10:03:13 GMT -->
+</html>
+
+
+
