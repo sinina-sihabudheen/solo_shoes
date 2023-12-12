@@ -27,12 +27,12 @@ class Wallet(models.Model):
     wallet_id = models.CharField(max_length=12, unique=True)
     balance = models.PositiveIntegerField(default=0)
 
-    def save(self, *args, **kwargs):
-        if not self.wallet_id:
-            # Generate a random wallet ID using uuid
-            self.wallet_id = str(uuid.uuid4())[:12]
+    # def save(self, *args, **kwargs):
+    #     if not self.wallet_id:
+    #         # Generate a random wallet ID using uuid
+    #         self.wallet_id = str(uuid.uuid4())[:12]
 
-        super().save(*args, **kwargs)
+    #     super().save(*args, **kwargs)
 
     def _str_(self):
         return f"{self.user.username}'s Wallet"

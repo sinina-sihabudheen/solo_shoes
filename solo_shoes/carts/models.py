@@ -61,7 +61,7 @@ class Cart(models.Model):
         orderitems = self.cartitem_set.all()
         total = sum(item.get_total for item in orderitems)
         if self.coupon:
-            if self.coupon.minimum_amount < total:
+            if self.coupon.minimum_amount < total :
                 return total-self.coupon.discount_price
         
         return total

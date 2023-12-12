@@ -28,51 +28,95 @@ def _cart_id(request):
             user_cart, _ = Cart.objects.get_or_create(user=request.user, shopping_cart=shopping_cart)
         
     return cart
-
+from django.shortcuts import get_object_or_404
 
 def add_cart(request, product_id):
-    product = Product.objects.get(id=product_id)
-
-    try:
-        product = Product.objects.get(id=product_id)
-    except Product.DoesNotExist:
-        
-        messages.error(request, "Product not found.")
-        return redirect('carts:carts')
-    
+    product = get_object_or_404(Product, id=product_id)
     current_user = request.user
-    
+
     if current_user.is_authenticated:
-        
-        cart, _ = Cart.objects.get_or_create(user=current_user, complete = False)
+        # Get all incomplete carts for the user
+        carts = Cart.objects.filter(user=current_user, complete=False)
+
+        if carts.exists():
+            # Choose the first cart if there are multiple incomplete carts
+            cart = carts.first()
+        else:
+            # Create a new cart if none exists
+            cart = Cart.objects.create(user=current_user, complete=False)
+
         if not cart.shopping_cart:
             cart.shopping_cart, created = ShoppingCart.objects.get_or_create(session_key=request.session.session_key)
-            cart.save()
-    
-
-    try:
-        cart_item = CartItem.objects.get(order=cart, product=product)
-        cart_item.quantity += 1
-        product.stock-=1
-        product.save()
-    except CartItem.DoesNotExist:
-        cart_item = CartItem.objects.create(order=cart, product=product, quantity=1)    
-        cart_item.save()   
-        product.stock -= 1
-        product.save()
         
-    try:
-         wishlist = Whishlist.objects.get(user=request.user)
-    except ObjectDoesNotExist:
-   
-        wishlist = Whishlist(user=request.user)
+        try:
+            cart_item = CartItem.objects.get(order=cart, product=product)
+            cart_item.quantity += 1
+            product.stock -= 1
+            product.save()
+        except CartItem.DoesNotExist:
+            cart_item = CartItem.objects.create(order=cart, product=product, quantity=1)
+            product.stock -= 1
+            product.save()
+
+        try:
+            wishlist = Whishlist.objects.get(user=request.user)
+        except ObjectDoesNotExist:
+            wishlist = Whishlist(user=request.user)
+            wishlist.save()
+
+        wishlist.products.remove(product)
         wishlist.save()
 
-    wishlist.products.remove(product)
-    wishlist.save()
-    messages.success(request, f"{product.product_name} added to the cart.")
+        messages.success(request, f"{product.product_name} added to the cart.")
 
     return redirect('carts:carts')
+
+
+
+# def add_cart(request, product_id):
+#     # product = Product.objects.get(id=product_id)
+#     product= get_object_or_404(Product,id=product_id)
+
+#     # try:
+#     #     product = Product.objects.get(id=product_id)
+#     # except Product.DoesNotExist:
+        
+#     #     messages.error(request, "Product not found.")
+#     #     return redirect('carts:carts')
+    
+#     current_user = request.user
+    
+#     if current_user.is_authenticated:
+        
+#         cart, _ = Cart.objects.get_or_create(user=current_user, complete = False)
+#         if not cart.shopping_cart:
+#             cart.shopping_cart, created = ShoppingCart.objects.get_or_create(session_key=request.session.session_key)
+#             cart.save()
+    
+
+#     try:
+#         cart_item = CartItem.objects.get(order=cart, product=product)
+#         cart_item.quantity += 1
+#         product.stock-=1
+#         product.save()
+#     except CartItem.DoesNotExist:
+#         cart_item = CartItem.objects.create(order=cart, product=product, quantity=1)    
+#         cart_item.save()   
+#         product.stock -= 1
+#         product.save()
+        
+#     try:
+#          wishlist = Whishlist.objects.get(user=request.user)
+#     except ObjectDoesNotExist:
+   
+#         wishlist = Whishlist(user=request.user)
+#         wishlist.save()
+
+#     wishlist.products.remove(product)
+#     wishlist.save()
+#     messages.success(request, f"{product.product_name} added to the cart.")
+
+#     return redirect('carts:carts')
 
 def remove_cart_item(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -140,39 +184,43 @@ def update_cart(request):
 def carts(request, total=0, quantity=0):
     try:
         if request.user.is_authenticated:
-            cart = Cart.objects.get(user=request.user, complete = False)
-            cart_items = CartItem.objects.filter(order=cart)
+            carts = Cart.objects.filter(user=request.user, complete = False)
+            if carts.exists():
+                cart = carts.first()
+                cart_items = CartItem.objects.filter(order=cart)
 
-            for cart_item in cart_items:
-                cart_item.offer = Offer.objects.filter(product=cart_item.product).first()
-                product_category = cart_item.product.category  
-                cart_item.product.category.offer = OfferCategory.objects.filter(category=product_category).first()
-                
-                if cart_item.product.offer and cart_item.product.category.offer:
-                    discount_percentage = max(cart_item.product.offer.discount_percentage, cart_item.product.category.offer.discount_percentage)
-                elif cart_item.product.category.offer:
-                    discount_percentage = cart_item.product.category.offer.discount_percentage
-                elif cart_item.product.offer:
-                    discount_percentage = cart_item.product.offer.discount_percentage
-                else:
-                    discount_percentage = 0
-                
-                if discount_percentage > 0:
-                    discount_factor = Decimal(discount_percentage) / Decimal(100)
-                    cart_item.discounted_price = cart_item.product.price - (cart_item.product.price * discount_factor)
-                else:
-                    cart_item.discounted_price = None
+                for cart_item in cart_items:
+                    cart_item.offer = Offer.objects.filter(product=cart_item.product).first()
+                    product_category = cart_item.product.category  
+                    cart_item.product.category.offer = OfferCategory.objects.filter(category=product_category).first()
+                    
+                    if cart_item.product.offer and cart_item.product.category.offer:
+                        discount_percentage = max(cart_item.product.offer.discount_percentage, cart_item.product.category.offer.discount_percentage)
+                    elif cart_item.product.category.offer:
+                        discount_percentage = cart_item.product.category.offer.discount_percentage
+                    elif cart_item.product.offer:
+                        discount_percentage = cart_item.product.offer.discount_percentage
+                    else:
+                        discount_percentage = 0
+                    
+                    if discount_percentage > 0:
+                        discount_factor = Decimal(discount_percentage) / Decimal(100)
+                        cart_item.discounted_price = cart_item.product.price - (cart_item.product.price * discount_factor)
+                    else:
+                        cart_item.discounted_price = None
 
-                
+                    
 
-                
-                # Update total and quantity
-                if cart_item.discounted_price is not None:
-                    total += cart_item.discounted_price * cart_item.quantity
-                else:
-                    total += cart_item.product.price * cart_item.quantity
-                
-                quantity += cart_item.quantity
+                    
+                    # Update total and quantity
+                    if cart_item.discounted_price is not None:
+                        total += cart_item.discounted_price * cart_item.quantity
+                    else:
+                        total += cart_item.product.price * cart_item.quantity
+                    
+                    quantity += cart_item.quantity
+            else:
+                cart_items = []
 
     except ObjectDoesNotExist:
         cart_items = []
@@ -181,7 +229,7 @@ def carts(request, total=0, quantity=0):
         'total': total,
         'quantity': quantity,
         'cart_items': cart_items,
-        'cart' : cart,
+        'cart': cart if 'cart' in locals() else None,
     }
 
     return render(request, 'carts/cart.html', context)
@@ -189,69 +237,76 @@ def carts(request, total=0, quantity=0):
 
 def checkout(request):
     try:
-        cart = Cart.objects.get(user=request.user, complete = False)
-        cart_items = CartItem.objects.filter(order=cart)
-        user_address = ShippingAddress.objects.filter(user=request.user, status=True).first()
+        cart = Cart.objects.filter(user=request.user, complete = False).first()
+        if cart:
+            cart_items = CartItem.objects.filter(order=cart)
+            user_address = ShippingAddress.objects.filter(user=request.user, status=True).first()
+            cart.coupon = None
+            cart.save()
+            wallet = Wallet.objects.get(user=request.user)
+
+            # Calculate total and quantity
+            total = 0
+            quantity = 0
+            for cart_item in cart_items:
+                total += (cart_item.product.price * cart_item.quantity)
+                quantity += cart_item.quantity
+
+
         
 
-        # Calculate total and quantity
-        total = 0
-        quantity = 0
-        for cart_item in cart_items:
-            total += (cart_item.product.price * cart_item.quantity)
-            quantity += cart_item.quantity
+            user_addresses = ShippingAddress.objects.filter(user=request.user)
+        
 
+            context = {
+                'cart': cart,
+                'user_address': user_address,
+                'user_addresses': user_addresses,
+                'cart_items': cart_items,
+                'total': total,
+                'quantity': quantity,
+                'wallet' : wallet,
+            }
 
-      
+            return render(request, 'carts/checkout.html', context)
+        else:
+            messages.error(request, 'Cart not found. Please add items to your cart.')
+            return redirect('carts:carts')
 
-        user_addresses = ShippingAddress.objects.filter(user=request.user)
-       
-
-        context = {
-            'cart': cart,
-            'user_address': user_address,
-            'user_addresses': user_addresses,
-            'cart_items': cart_items,
-            'total': total,
-            'quantity': quantity,
-            
-        }
-
-        return render(request, 'carts/checkout.html', context)
 
     except ObjectDoesNotExist:
         messages.error(request, 'Cart not found. Please add items to your cart.')
         return redirect('carts:carts')
     
     
-def apply_coupon(request,cart_id):
+# def apply_coupon(request,cart_id):
 
-    cart = Cart.objects.get(user=request.user, id=cart_id)
-    if  request.method=='POST':
-        coupon = request.POST.get('coupon')
-        coupon_obj = Coupon.objects.filter(coupon_code__icontains=coupon)
+#     cart = Cart.objects.get(user=request.user, id=cart_id)
+#     if  request.method=='POST':
+#         coupon = request.POST.get('coupon')
+#         coupon_obj = Coupon.objects.filter(coupon_code__icontains=coupon)
 
-        if not coupon_obj.exists():
-            messages.warning(request,'Invalid Coupon!!')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+#         if not coupon_obj.exists():
+#             messages.warning(request,'Invalid Coupon!!')
+#             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
                     
-        if cart.coupon:
-            messages.warning(request,'Coupon Exists already..')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+#         if cart.coupon:
+#             messages.warning(request,'Coupon Exists already..')
+#             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
                     
-        if cart.get_cart_total < coupon_obj[0].minimum_amount:
-            messages.warning(request,f'Amount should be greater than {coupon_obj[0].minimum_amount}')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+#         if cart.get_cart_total < coupon_obj[0].minimum_amount:
+#             messages.warning(request,f'Amount should be greater than {coupon_obj[0].minimum_amount}')
+#             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
                     
-        if coupon_obj[0].is_expired:
-            messages.warning(request,f'Coupon is expired')
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+#         if coupon_obj[0].is_expired:
+#             messages.warning(request,f'Coupon is expired')
+#             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
                     
-        cart.coupon = coupon_obj[0]
-        cart.save()
-        messages.success(request,'Coupon applied..')
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-    return redirect('carts:checkout')      
+#         cart.coupon = coupon_obj[0]
+#         cart.save()
+#         messages.success(request,'Coupon applied..')
+#         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+#     return redirect('carts:checkout')      
 
 @login_required
 def apply_coupon(request, cart_id):
@@ -288,7 +343,7 @@ def remove_coupon(request,cart_id):
     messages.success(request,'Coupon Removed')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-
+from django.db import transaction
 def place_order(request):
     if request.user.is_authenticated:
         if request.method == 'POST':
@@ -302,7 +357,14 @@ def place_order(request):
                 messages.error(request, "Please select a valid shipping address before placing your order.")
                 return redirect('carts:checkout')
 
-            cart = Cart.objects.get(user=request.user, complete=False)
+            # cart = Cart.objects.get(user=request.user, complete=False)
+            
+            carts = Cart.objects.filter(user=request.user, complete=False)
+
+            if not carts.exists():
+                messages.error(request, "Your cart is empty. Add items to your cart before placing an order.")
+                return redirect('carts:carts')
+            cart = carts.first()
             cart_items = CartItem.objects.filter(order=cart)
 
             if not cart_items:
@@ -314,11 +376,13 @@ def place_order(request):
                 shipping_address=selected_address,
                 payment_method=selected_payment_method,  # Set the payment method as needed
             )
-            current_cart = Cart.objects.select_for_update().get(user=request.user, complete=False)
-            if current_cart.coupon:
-                cart.coupon = current_cart.coupon
+            with transaction.atomic():
+                current_cart = Cart.objects.select_for_update().filter(user=request.user, complete=False).first()
 
-            cart.save()
+                if current_cart.coupon:
+                    cart.coupon = current_cart.coupon
+
+                cart.save()
 
             if selected_payment_method == 'cod':
                 cart.payment_method='COD'
@@ -326,24 +390,28 @@ def place_order(request):
             elif selected_payment_method == 'wallet':
                 cart.payment_method='WAL'
                 print("WALLET!!!!")
-            if cart.coupon:
-                user_wallet = Wallet.objects.get(user=request.user)
                 total_amount = sum(cart_item.get_total for cart_item in cart_items)
-                print("total amount",total_amount)
-                total_amount -= cart.coupon.discount_price
-                user_wallet.balance -= total_amount
-                cart.coupon.mark_as_used(request.user) 
-                user_wallet.save()
-            else:
                 user_wallet = Wallet.objects.get(user=request.user)
-                total_amount = sum(cart_item.get_total for cart_item in cart_items) 
-                print("total amount no coupon",total_amount)   
                 user_wallet.balance -= total_amount
-                print("wallet balance no coupon",user_wallet.balance)
-                user_wallet.save()    
-                    
+                user_wallet.save()
 
+            # if cart.coupon:
+            #     user_wallet = Wallet.objects.get(user=request.user)
                 
+            #     print("total amount",total_amount)
+            #     total_amount -= cart.coupon.discount_price
+            #     user_wallet.balance -= 900
+            
+            #     cart.coupon.mark_as_used(request.user)
+            # else:
+            #     user_wallet = Wallet.objects.get(user=request.user)
+            #     total_amount = sum(cart_item.get_total for cart_item in cart_items) 
+            #     print("total amount no coupon",total_amount)   
+            #     user_wallet.balance -= total_amount
+            #     print("wallet balance no coupon",user_wallet.balance)
+            #     user_wallet.save()   
+
+                              
 
             for cart_item in cart_items:
                 cart_item.order = cart

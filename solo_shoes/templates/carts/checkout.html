@@ -130,13 +130,16 @@
 															COD
 														</label>
 													</div>
+													{% with wallet_balance=wallet.balance %}
+    												{% if wallet_balance > cart_item.get_total %}
 													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
 														<input class="form-check-input col-3" type="radio" value="wallet" id="wallet" name="payment" required>
 														<label class="col-9  mx-auto mx-5" for="wallet">
 															WALLET
 														</label>
 													</div>
-													
+												{% endif %}
+												{% endwith %}
 													
 												</div>																						
 											</div><!-- End .accordion -->
