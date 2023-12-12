@@ -6,7 +6,21 @@
 
 
 <div class="container">
-    <h2>Order Details</h2>
+    <div class="page-header text-center" style="background-image: url('user_auth/assets/images/page-header-bg.jpg')">
+        <div class="container">
+            <h1 class="page-title">Order Details</h1>
+        </div><!-- End .container -->
+    </div><!-- End .page-header -->
+    <nav aria-label="breadcrumb" class="breadcrumb-nav mb-3">
+        <div class="container">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'user_authentication:home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'user_profile:profile' %}">My Profile</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Orders</li>
+
+            </ol>
+        </div><!-- End .container -->
+    </nav><!-- End .breadcrumb-nav -->
     {% if order %}
     
     <div class="card mb-3 p-5 " style="border-radius: 7px; background:#f3f3f9;">

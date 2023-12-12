@@ -150,15 +150,19 @@ def remove_cart_item(request, product_id):
 
     return redirect('carts:carts')
 
-
-
-
 def update_cart(request):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
         action = request.POST.get('action')
-        product = Product.objects.get(id=product_id)
-        cart = Cart.objects.get(user=request.user, complete=False)
+        product = get_object_or_404(Product, id=product_id)
+        
+        # Use filter to get a queryset and first() to retrieve the first object
+        carts = Cart.objects.filter(user=request.user, complete=False)
+        cart = carts.first()
+
+        if not cart:
+            messages.error(request, "Cart not found.")
+            return redirect('carts:carts')
 
         cart_item, created = CartItem.objects.get_or_create(order=cart, product__id=product_id)
         
@@ -180,6 +184,35 @@ def update_cart(request):
             messages.success(request, 'Cart updated successfully.')
 
     return redirect('carts:carts')
+
+
+# def update_cart(request):
+#     if request.method == 'POST':
+#         product_id = request.POST.get('product_id')
+#         action = request.POST.get('action')
+#         product = Product.objects.get(id=product_id)
+#         cart = Cart.objects.get(user=request.user, complete=False)
+
+#         cart_item, created = CartItem.objects.get_or_create(order=cart, product__id=product_id)
+        
+#         if not created:
+#             if action == 'increment':
+#                 if product.stock > 0:
+#                     cart_item.quantity += 1
+#                     product.stock -= 1
+#                     product.save()
+#             elif action == 'decrement':
+#                 cart_item.quantity -= 1
+#                 product.stock += 1
+#                 product.save()
+
+#                 if cart_item.quantity <= 0:
+#                     cart_item.delete()
+
+#             cart_item.save()
+#             messages.success(request, 'Cart updated successfully.')
+
+#     return redirect('carts:carts')
 
 def carts(request, total=0, quantity=0):
     try:
@@ -311,29 +344,64 @@ def checkout(request):
 @login_required
 def apply_coupon(request, cart_id):
     cart = get_object_or_404(Cart, id=cart_id)
+    # cart = Cart.objects.get(user=request.user, id=cart_id)
     
     if request.method == 'POST':
         coupon_code = request.POST.get('coupon')
+        print(coupon_code)
         try:
             coupon = Coupon.objects.get(coupon_code__icontains=coupon_code)
-            
+            print(coupon)
             if coupon.valid_till < timezone.now():
                 messages.error(request, 'Coupon has expired.', extra_tags='danger')
             elif cart.get_cart_total < coupon.minimum_amount:
                 messages.error(request, f'Amount should be greater than {coupon.minimum_amount}', extra_tags='danger')
             elif not coupon.is_user_eligible(request.user):
                 messages.error(request, 'You have already used this coupon.', extra_tags='danger')
+            elif coupon.mark_as_used(request.user):
+                messages.error(request, 'You have already used this coupon.', extra_tags='danger')
             elif cart.coupon:
                 messages.error(request, 'Coupon already applied.', extra_tags='danger')
             else:
                 cart.coupon = coupon
+                
                 cart.save()
+                
+                print(cart.get_cart_total)
                 messages.success(request, 'Coupon successfully applied.', extra_tags='success')
+            
 
         except Coupon.DoesNotExist:
             messages.error(request, 'Invalid coupon code. Please try again.', extra_tags='danger')
+    cart_items = CartItem.objects.filter(order=cart)
+    user_address = ShippingAddress.objects.filter(user=request.user, status=True).first()
+    cart.save()
+    wallet = Wallet.objects.get(user=request.user)
 
-    return redirect('carts:checkout') 
+    total = 0
+    quantity = 0
+            
+    for cart_item in cart_items:
+        total += (cart_item.product.price * cart_item.quantity)
+        quantity += cart_item.quantity
+
+
+        
+
+    user_addresses = ShippingAddress.objects.filter(user=request.user)
+        
+
+    context = {
+                'cart': cart,
+                'user_address': user_address,
+                'user_addresses': user_addresses,
+                'cart_items': cart_items,
+                'total': total,
+                'quantity': quantity,
+                'wallet' : wallet,
+            }
+
+    return render(request, 'carts/checkout.html', context) 
 
 
 def remove_coupon(request,cart_id):          
@@ -449,14 +517,17 @@ def add_address(request):
 
 def razorpaycheck(request):
     try:
-        cart = Cart.objects.filter(user=request.user, complete=False).latest('date_added')
+        cart = Cart.objects.get(user=request.user, complete=False)
         cart_items = CartItem.objects.filter(order=cart)
-        total_price = 0
+        print(cart)
+        total_price =cart.get_cart_total
+        print(total_price)
 
-        for cart_item in cart_items:
-                total_price += cart_item.get_total
-                
 
+        # for cart_item in cart_items:
+        #         total_price += 100
+        #         print(cart_item.get_total)
+        
         return JsonResponse ({
                 'total_price' : total_price,
             })

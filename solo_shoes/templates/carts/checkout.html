@@ -29,10 +29,12 @@
 						<div class="cart-bottom">
 							<div class="cart-discount">
 								<form method="post" action="{% url 'carts:apply_coupon' cart.id %}">
-									{% if message %}
-									
-									<div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+									{% csrf_token %}
+									{% if messages  %}
 								
+									{% for message in messages %}
+									<div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+								{% endfor %}
 									{% endif %}
 									{% csrf_token %}
 									<div class="input-group">
@@ -130,8 +132,8 @@
 															COD
 														</label>
 													</div>
-													{% with wallet_balance=wallet.balance %}
-    												{% if wallet_balance > cart_item.get_total %}
+											
+    												{% if wallet.balance > total %}
 													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
 														<input class="form-check-input col-3" type="radio" value="wallet" id="wallet" name="payment" required>
 														<label class="col-9  mx-auto mx-5" for="wallet">
@@ -139,7 +141,7 @@
 														</label>
 													</div>
 												{% endif %}
-												{% endwith %}
+												
 													
 												</div>																						
 											</div><!-- End .accordion -->
@@ -231,7 +233,7 @@
 
               var options = {
             "key": "rzp_test_jqDk0ijEJwoHUe", // Enter the Key ID generated from the Dashboard
-            "amount": response.total_price * 100,  // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            "amount": Number(response.total_price) * 100,  // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
             "currency": "INR",
             "name": "SOLO SHOES", //your business name
             "description": "Thank you for buying from us...",

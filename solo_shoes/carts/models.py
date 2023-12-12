@@ -19,9 +19,14 @@ class Coupon(models.Model):
     minimum_amount = models.IntegerField(default=500)
     used_by = models.ManyToManyField(User, blank=True) 
 
-
+    
+    
     def __str__(self):
         return self.coupon_code
+    
+    @property
+    def is_expired(self):
+        return timezone.now() > self.valid_till
     
     def is_user_eligible(self, user):
         return user not in self.used_by.all() 
@@ -60,9 +65,11 @@ class Cart(models.Model):
     def get_cart_total(self):
         orderitems = self.cartitem_set.all()
         total = sum(item.get_total for item in orderitems)
-        if self.coupon:
-            if self.coupon.minimum_amount < total :
-                return total-self.coupon.discount_price
+        
+        if self.coupon:            
+            if self.coupon.minimum_amount <= total:
+                return total - self.coupon.discount_price
+
         
         return total
 
