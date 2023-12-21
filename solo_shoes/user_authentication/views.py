@@ -1,5 +1,7 @@
 from datetime import timedelta
 from decimal import Decimal
+from itertools import count
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -7,20 +9,14 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.mail import send_mail
 from django.db.models import Q
 import random
+from django.urls import reverse
 from django.utils import timezone
 from django.db import IntegrityError
 from django.views.decorators.cache import never_cache
-from custom_admin_panel.models import Product
+from custom_admin_panel.models import Category, Product
 from user_profile.models import Wallet
 from store.models import Offer, OfferCategory
 import random
-import string
-
-# def generate_referral_code():
-#     # Generate a random alphanumeric code
-#     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-
-
 
 
 
@@ -52,11 +48,23 @@ def home(request):
              
         else:
             product.discounted_price = None
+
+
       context = {
           'products' : products,
 
       }
       return render(request, 'user_authentication/index.html' , context)
+
+def search_suggestions(request):
+    print("search...")
+    term = request.GET.get('term', '')
+    suggestions = Product.objects.filter(product_name__icontains=term)[:5] 
+    print(suggestions)
+    data = [{'label': product.product_name, 'value': product.product_name, 'url': reverse('store:product', args=[product.id])} for product in suggestions]
+    
+    return JsonResponse(data)
+
 
 
 def register(request):

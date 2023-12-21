@@ -39,7 +39,7 @@
                                                 <td>{{ coupon.discount_price }}</td>
                                                 <td>{{ coupon.minimum_amount }}</td>
                                                 
-                                                <td>{{ coupon.is_expired }}
+                                                <td>{{ coupon.has_expired }}
                                                 </td>
                                                 <td>
                                                     {% if coupon.used_by.exists %}
@@ -52,13 +52,12 @@
                                                         No Users
                                                     {% endif %}
                                                 </td>
-                                                <td>
-                                                    <a href="{% url 'custom_admin_panel:edit_coupon' coupon.id %}" class="btn btn-inverse-info">Edit Coupon</a>
-                                                </td>
-                                                <td>
-                                                    <a href="{% url 'custom_admin_panel:remove_coupon' coupon.id %}" class="btn btn-inverse-info">Remove Coupon</a>
-                                                </td>
                                                 
+                                                <td>
+                                                    <a href="{% url 'custom_admin_panel:toggle_coupon_status' coupon.id %}" class="badge {% if coupon.status %}badge-danger{% else %}badge-success{% endif %}">
+                                                        {% if coupon.status %}Unblock{% else %}Block{% endif %}
+                                                    </a>
+                                                </td>
                                             </tr>
                                             
                                     {% endfor %}

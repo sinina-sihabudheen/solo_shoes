@@ -15,10 +15,11 @@
                 <div class="container">
                 	<div class="row">
                 		<div class="col-lg-9">
-                		    <div class="products mb-3">
-								
+							
+							<div class="products mb-3">								
                                 <div class="row justify-content-center">
-                                    {% for product in products %}
+                                    {% if filtered_products %}
+									{% for product in filtered_products %}
                                     <div class="col-6 col-md-4 col-lg-4">
                                         <div class="product product-7 text-center">
                                             <figure class="product-media">
@@ -84,9 +85,80 @@
                                             </div><!-- End .product-body -->
                                         </div><!-- End .product -->
                                     </div><!-- End .col-sm-6 col-lg-4 -->   
-                                    {% endfor %}                                                          
+                                    {% endfor %} 
+									{% else %}
+                		    {% for product in products %}
+                                    <div class="col-6 col-md-4 col-lg-4">
+                                        <div class="product product-7 text-center">
+                                            <figure class="product-media">
+												{% if product.offer %}
+												<span class="product-label label-primary">{{ product.offer.offer_name }}</span>
+                                        		<span class="product-label label-sale">{{ product.offer.discount_percentage|floatformat:.2 }}% off</span>
+												{% endif %}
+												{% if product.category.offer %}
+												<span class="product-label label-primary">{{ product.category.offer.category_offer_name }}</span>
+                                        		<span class="product-label label-sale">{{ product.category.offer.discount_percentage|floatformat:.2 }}% off</span>
+												{% endif %}
+                                                <!-- <span class="product-label label-new">New</span> -->
+                                                <a href="{% url 'store:product' product.id %}">
+                                                    <img src="{{ product.productimage_set.first.image.url }}" alt="Product image" class="product-image" style="width: 300px; height:250px;">
+                                                </a>
+
+                                                <div class="product-action-vertical">
+                                                    <a href="#" class="btn-product-icon btn-wishlist btn-expandable" data-product-id="{{product.id}}"><span>add to wishlist</span></a>
+                                                </div><!-- End .product-action-vertical -->
+												<!-- <div class="product-action-vertical"> -->
+                                                    {% if product.stock <= 0 %}
+                                            		 <span>Out Of Stock</span>
+											 		{% endif %}
+                                                <!-- </div>End .product-action-vertical -->
+
+                                                <div class="product-action">
+													{% if user.is_authenticated %}
+														{% if product.stock > 0 %}
+															<!-- If user is authenticated and product is in stock, redirect to the 'carts:add_cart' URL -->
+															<a href="{% url 'carts:add_cart' product_id=product.id %}" class="btn-product btn-cart">
+																<span>add to cart</span>
+															</a>
+														{% endif %}
+													{% else %}
+														<!-- If user is not authenticated, redirect to the 'user_authentication:register' URL -->
+														<a href="{% url 'user_authentication:register' %}" class="btn-product btn-cart">
+															<span>add to cart</span>
+														</a>
+													{% endif %}
+												</div><!-- End .product-action -->
+												
+                                            </figure><!-- End .product-media -->
+
+                                            <div class="product-body">
+                                                <div class="product-cat">
+                                                    <a href="#">{{ product.category }}</a>
+                                                </div><!-- End .product-cat -->
+												<h3 class="product-title"><a href="product.html">{{ product.product_name }}</a></h3><!-- End .product-title -->
+                                                
+												{% if product.discounted_price is not None %}
+												<div class="product-price">													
+													<span class="new-price">Now {{ '₹ ' }}{{ product.discounted_price|floatformat:2 }}</span>
+													<span class="old-price">{{ '₹ ' }}{{ product.price}}</span>												
+												</div><!-- End .product-price -->
+												{% else %}
+												<div class="product-price">													
+													<span class="new-price">{{ '₹ ' }}{{ product.price}}</span>												
+												</div><!-- End .product-price -->
+												{% endif %}
+												
+																							
+											                                          
+                                            </div><!-- End .product-body -->
+                                        </div><!-- End .product -->
+                                    </div><!-- End .col-sm-6 col-lg-4 -->   
+                                    {% endfor %} 
+									{% endif %}                                                         
                                 </div><!-- End .row -->
                             </div><!-- End .products -->
+							                                                         
+                                
 
                 			<nav aria-label="Page navigation">
 								{% if products.has_other_pages %}
@@ -153,21 +225,43 @@
 											<a data-toggle="collapse" href="#widget-5" role="button" aria-expanded="true" aria-controls="widget-5">
 												Price
 											</a>
-										</h3><!-- End .widget-title -->
-	
+										</h3>
+									
 										<div class="collapse show" id="widget-5">
 											<div class="widget-body">
-												<div class="filter-price">
-													<div class="filter-price-text">
-														Price Range:
-														<span id="filter-price-range"></span>
-													</div><!-- End .filter-price-text -->
-	
-													<div id="price-slider"></div><!-- End #price-slider -->
-												</div><!-- End .filter-price -->
-											</div><!-- End .widget-body -->
-										</div><!-- End .collapse -->
-									</div><!-- End .widget -->
+												<form method="get" action="{% url 'store:search_by_price' %}">
+													<div class="filter-price">
+														<div class="filter-price-text">
+															Price Range:
+															<span id="filter-price-range"></span>
+														</div>   
+														<div id="price-slider"></div>
+													</div>
+													<script>
+														// Initialize the price range slider
+														var priceSlider = document.getElementById('price-slider');
+														var filterPriceRange = document.getElementById('filter-price-range');
+													
+														noUiSlider.create(priceSlider, {
+															start: [100, 3000], // Set default min and max values
+															connect: true,
+															range: {
+																'min': 100,
+																'max': 3000
+															}
+														});
+													
+														// Update the filter price range text when the slider values change
+														priceSlider.noUiSlider.on('update', function (values, handle) {
+															filterPriceRange.innerHTML = '₹' + values[0] + ' - ₹' + values[1];
+														});
+													</script>
+									
+													<button type="submit" class="btn btn-primary">Apply Filter</button>
+												</form>
+											</div>
+										</div>
+									</div>
 
         					
                 			</div><!-- End .sidebar sidebar-shop -->
@@ -201,6 +295,8 @@
     <script src="{% static 'user_auth/assets/js/nouislider.min.js' %}"></script>
     <!-- Main JS File -->
     <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+
+	
 
 	<script>  
 

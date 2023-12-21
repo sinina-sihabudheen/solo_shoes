@@ -18,14 +18,14 @@ class Coupon(models.Model):
     discount_price = models.PositiveIntegerField(default=100)
     minimum_amount = models.IntegerField(default=500)
     used_by = models.ManyToManyField(User, blank=True) 
-
+    status = models.BooleanField(default=True)
     
     
     def __str__(self):
         return self.coupon_code
     
     @property
-    def is_expired(self):
+    def has_expired(self):
         return timezone.now() > self.valid_till
     
     def is_user_eligible(self, user):
@@ -34,6 +34,7 @@ class Coupon(models.Model):
     def mark_as_used(self, user):
         self.used_by.add(user)
         self.save()   
+    
 
 
 class Cart(models.Model):
@@ -103,6 +104,7 @@ class CartItem(models.Model):
     ]
     
     delivery_status = models.CharField(max_length=3, choices=ORDER_STATUS_CHOICES, default='C')
+    
 
     
     @property

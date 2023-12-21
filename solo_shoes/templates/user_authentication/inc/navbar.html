@@ -23,6 +23,10 @@
     <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/skins/skin-demo-10.css' %}">
     <link rel="stylesheet" href="{% static 'assets/css/demos/demo-10.css' %}">
+    <!-- Include these scripts in the head section of your HTML -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.js"></script>
+
     
     <script>
         var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -154,14 +158,17 @@
                 </nav><!-- End .main-nav -->
 
                 <div class="header-search">
-                    <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
-                    <form action="#" method="get">
-                        <div class="header-search-wrapper">
+                    /* <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a> */
+                    <form action="#" method="get" id="searchFormhome">
+                        <div class="header-search-wrapper search-wrapper-wide">
                             <label for="q" class="sr-only">Search</label>
                             <input type="search" class="form-control" name="q" id="q" placeholder="Search in..." required>
+                            <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+
                         </div><!-- End .header-search-wrapper -->
                     </form>
                 </div><!-- End .header-search -->
+                
                 {% if user.is_authenticated %}
                 <div class="dropdown cart-dropdown">
                     <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">

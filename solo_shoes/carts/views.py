@@ -360,6 +360,8 @@ def apply_coupon(request, cart_id):
                 messages.error(request, 'You have already used this coupon.', extra_tags='danger')
             elif coupon.mark_as_used(request.user):
                 messages.error(request, 'You have already used this coupon.', extra_tags='danger')
+            elif coupon.status==False:
+                messages.error(request, 'This coupon does not exist now..', extra_tags='danger')
             elif cart.coupon:
                 messages.error(request, 'Coupon already applied.', extra_tags='danger')
             else:

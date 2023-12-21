@@ -39,7 +39,7 @@ class Product(models.Model):
 class ProductImage(models.Model):
     image = models.ImageField(upload_to='adminside/assets/images/solo_images/athletics')
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    # ,blank=True,null=True
+    
 
     def __str__(self):
         return self.image.url

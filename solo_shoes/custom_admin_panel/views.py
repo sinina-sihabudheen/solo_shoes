@@ -15,7 +15,7 @@ from django.views.decorators.cache import never_cache
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 
-from .forms import ProductForm, CategoryForm, ProductImageFormSet
+from .forms import CartsForm, ProductForm, CategoryForm, ProductImageFormSet
 from django.http import HttpResponse, JsonResponse
 # from django.template.loader import get_template
 # from xhtml2pdf import pisa
@@ -59,7 +59,7 @@ def dashboard(request):
 
         order_delivered = CartItem.objects.filter(delivery_status='D')
         
-        all_order_items = CartItem.objects.all()
+        all_order_items = CartItem.objects.filter(~Q(delivery_status='C'))
         
 
         
@@ -87,12 +87,16 @@ def dashboard(request):
                      
         cod_orders = all_orders.filter(payment_method='COD')
         raz_orders = all_orders.filter(payment_method='RAZ')
+        wallet_orders = all_orders.filter(payment_method='WAL')
 
         cod_count = cod_orders.count()    
         raz_count = raz_orders.count()
+        wallet_count = wallet_orders.count()
+
 
         cod_total = sum(order.get_cart_total for order in cod_orders)
         raz_total = sum(order.get_cart_total for order in raz_orders)
+        wallet_total = sum(order.get_cart_total for order in wallet_orders)
 
          
         
@@ -106,7 +110,9 @@ def dashboard(request):
             'cod_count': cod_count,            
             'cod_total': cod_total,  
             'raz_count': raz_count,
-            'raz_total': raz_total,      
+            'raz_total': raz_total,  
+            'wallet_count': wallet_count,
+            'wallet_total': wallet_total,  
             'filter_type': filter_type,  
             'order_delivered': order_delivered,
             'total_stock' : total_stock,
@@ -323,12 +329,12 @@ def order_edit(request, order_item_id):
     order_item = get_object_or_404(CartItem, id=order_item_id)
 
     if request.method == 'POST':
-        form = OrderForm(request.POST, instance=order_item)
+        form = CartsForm(request.POST, instance=order_item)
         if form.is_valid():
             form.save()
             return redirect('custom_admin_panel:order')
     else:
-        form = OrderForm(instance=order_item)
+        form = CartsForm(instance=order_item)
 
     context = {
         'form': form,
@@ -561,31 +567,40 @@ def add_coupon(request):
     
     return render(request, 'custom_admin_panel/coupon_form.html', {'form': form})
 
-def edit_coupon(request,coupon_id):
+# def edit_coupon(request,coupon_id):
 
+#     coupon = get_object_or_404(Coupon, pk=coupon_id)
+
+#     if request.method == 'POST':
+#             form = CouponForm(request.POST, request.FILES, instance=coupon)
+#             if form.is_valid():
+#                 form.save()
+#                 return redirect('custom_admin_panel:coupon_list')
+#     else:
+#             form = CouponForm(instance=coupon)
+        
+#     context = {
+#                 'form': form,
+#                 'coupon': coupon,
+
+#         }
+        
+#     return render(request, 'custom_admin_panel/coupon_form.html', context)
+
+def toggle_coupon_status(request, coupon_id):
     coupon = get_object_or_404(Coupon, pk=coupon_id)
-
-    if request.method == 'POST':
-            form = CouponForm(request.POST, request.FILES, instance=coupon)
-            if form.is_valid():
-                form.save()
-                return redirect('custom_admin_panel:coupon_list')
-    else:
-            form = CouponForm(instance=coupon)
-        
-    context = {
-                'form': form,
-                'coupon': coupon,
-
-        }
-        
-    return render(request, 'custom_admin_panel/coupon_form.html', context)
-
-def remove_coupon(request,coupon_id):
-    coupon = get_object_or_404(Coupon, id=coupon_id)
-    coupon.delete()
+    
+    # Toggle the status
+    new_status = not coupon.status
+    coupon.status = new_status
+    coupon.save()
+    
     return redirect('custom_admin_panel:coupon_list')
+def block_coupon(request, coupon_id):
+    return toggle_coupon_status(request, coupon_id, False)
 
+def unblock_coupon(request, coupon_id):
+    return toggle_coupon_status(request, coupon_id, True)
 
 @never_cache
 def admin_logout(request):
@@ -596,3 +611,61 @@ def admin_logout(request):
 
 
 
+# @superuser_required
+# def admin_dash(request):
+#     all_orders = Order.objects.all()
+#     all_variations = ProductLanguageVariation.objects.all()
+#     all_order_items = OrderItem.objects.all()
+    
+#     filter_type = request.GET.get('filter_type', 'all')  
+
+ 
+#     if filter_type == 'day':
+#         start_date = datetime.now() - timedelta(days=1)
+#     elif filter_type == 'week':
+#         start_date = datetime.now() - timedelta(weeks=1)
+#     elif filter_type == 'month':
+#         start_date = datetime.now() - timedelta(weeks=4)  
+#     elif filter_type == 'year':
+#         start_date = datetime.now() - timedelta(weeks=52)  
+#     else:
+#         start_date = None  
+    
+#     if start_date:
+#         all_orders = all_orders.filter(date_ordered__gte=start_date)
+
+   
+#     total_revenue = sum(order.get_cart_total for order in all_orders)
+#     total_sales = sum(order.get_cart_items for order in all_orders)
+#     total_stock = sum(variation.stock for variation in all_variations)
+    
+    
+#     cod_orders = all_orders.filter(payment_method='COD')
+#     online_orders = all_orders.filter(payment_method='RAZ') 
+#     wallet_orders = all_orders.filter(payment_method='WAL')
+
+#     cod_count = cod_orders.count()
+#     online_count = online_orders.count()
+#     wallet_count = wallet_orders.count()
+
+#     cod_total = sum(order.get_cart_total for order in cod_orders)
+#     online_total = sum(order.get_cart_total for order in online_orders)
+#     wallet_total = sum(order.get_cart_total for order in wallet_orders)
+
+    
+#     context = {
+#         'total_revenue': total_revenue,
+#         'total_sales' : total_sales,
+#         'total_stock':total_stock,
+#         'all_orders':all_orders,
+#         'all_order_items':all_order_items,
+#         'cod_count': cod_count,
+#         'online_count': online_count,
+#         'wallet_count': wallet_count,
+#         'cod_total': cod_total,
+#         'online_total': online_total,
+#         'wallet_total': wallet_total,
+#         'filter_type': filter_type,  
+
+#     }
+#     return render(request, 'admin_panel/admin_dash.html', context)

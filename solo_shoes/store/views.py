@@ -65,7 +65,66 @@ def shop(request, category=None):
     return render(request, 'store/shop.html', context)
 
 
+def search_by_price(request):
+    default_min_price = 100.0
+    default_max_price = 3000.0
 
+    
+    min_price_str = request.GET.get('min_price', str(default_min_price))
+    max_price_str = request.GET.get('max_price', str(default_max_price))
+
+    print(f"min_price_str: {min_price_str}, max_price_str: {max_price_str}")
+
+
+    
+    try:
+        min_price = float(min_price_str)
+        max_price = float(max_price_str)
+    except ValueError:
+        min_price, max_price = default_min_price, default_max_price
+    
+    print(f"min_price: {min_price}, max_price: {max_price}")
+
+
+    
+    filtered_products = Product.objects.filter(price__gte=min_price, price__lte=max_price)
+    print(f"filtered_products: {filtered_products}")
+
+    for product in filtered_products:
+        now = timezone.now()
+        
+        product.offer = Offer.objects.filter(
+        Q(product=product) & Q(date_start__lte=now, date_end__gt=now)).first()
+
+        product.category.offer = OfferCategory.objects.filter(
+        Q(category=product.category) & Q(date_start__lte=now, date_end__gt=now)).first()
+        
+
+        if product.offer and product.category.offer:
+            discount_percentage = max(product.offer.discount_percentage, product.category.offer.discount_percentage)
+
+            
+        elif product.category.offer:
+             
+            discount_percentage = product.category.offer.discount_percentage
+
+        elif product.offer:
+            discount_percentage = product.offer.discount_percentage
+
+        else:
+            discount_percentage = 0
+
+        if discount_percentage > 0:
+            discount_factor = Decimal(discount_percentage) / Decimal(100)
+            product.discounted_price = product.price - (product.price * discount_factor)
+        else:
+            product.discounted_price = None
+
+    context = {
+        'filtered_products': filtered_products,
+    }
+
+    return render(request, 'store/shop.html', context)
 
 def product(request,product_id):
     product = get_object_or_404(Product, pk=product_id)

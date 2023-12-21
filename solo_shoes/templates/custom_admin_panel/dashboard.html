@@ -100,6 +100,7 @@
                   <h4 class="card-title">Transaction History</h4>
                   <input value="{{ cod_count }}" id="cod" hidden>
                   <input value="{{ raz_count }}" id="raz" hidden>
+                  <input value="{{ wallet_count }}" id="wallet" hidden>
 
                       <canvas id="myChart" style="width:80%;max-width:500px;  "></canvas>    
                   {% for order in all_orders reversed %}
@@ -116,6 +117,9 @@
                                   {% endif %}
                                   {% if order.payment_method == 'RAZ' %}                                  
                                       {{ raz_total }}
+                                  {% endif %}
+                                  {% if order.payment_method == 'WAL' %}                                  
+                                      {{ wallet_total }}
                                   {% endif %}
                                   
                               </h6>
@@ -205,15 +209,16 @@
         <script>
           let COD = document.getElementById("cod").value
           let RAZ = document.getElementById("raz").value
+          let Wallet = document.getElementById("wallet").value
 
          
 
     console.log(COD);
         var data = {
-            labels: ['COD','RAZ'],
+            labels: ['COD','RAZ','Wallet'],
             datasets: [{
-              data: [COD,RAZ],
-              backgroundColor: ['#FFCE56', '#36A2EB']
+              data: [COD,RAZ,Wallet],
+              backgroundColor: ['#FFCE56', '#36A2EB','#FF6384']
             }]
           };
 
@@ -230,3 +235,8 @@
 </body>
 
 </html>
+
+
+
+
+

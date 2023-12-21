@@ -38,9 +38,11 @@
                                                 <td>{{ order_item.quantity }}</td>
                                                 <td>{{ order_item.order.shipping_address.full_name }},
                                                     {{ order_item.order.shipping_address.address_lines }}</td>
+                                                {% if order_item.delivery_status != 'CN' %}
                                                 <td>
                                                     <a href="{% url 'custom_admin_panel:order_edit' order_item.id %}" class="btn btn-primary">Update Status</a>
                                                 </td>
+                                                {% endif %}
                                             </tr>
                                             {% endfor %}
                                     {% endfor %}
