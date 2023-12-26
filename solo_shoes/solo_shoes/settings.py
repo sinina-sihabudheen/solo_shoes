@@ -90,6 +90,18 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'databasenew',
+#         'USER': 'databaseadmin',
+#         'PASSWORD': 'admin1234',
+#         'HOST': 'databasenew.ckhlg9ebkuq8.eu-north-1.rds.amazonaws.com',
+#         'PORT': '3306',
+#     }
+# }
+
+
 
 
 # Password validation

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('custom_admin_panel', '0008_size_productvariance'),
+       
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('user_profile', '0001_initial'),
     ]

@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custom_admin_panel', '0019_coupon_delete_productvariance_delete_size'),
+       
         ('carts', '0015_alter_cartitem_order'),
     ]
 
