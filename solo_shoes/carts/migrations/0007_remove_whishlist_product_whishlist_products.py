@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custom_admin_panel', '0008_size_productvariance'),
+       
         ('carts', '0006_whishlist_user'),
     ]
 
