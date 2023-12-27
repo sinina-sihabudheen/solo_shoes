@@ -9,12 +9,13 @@ class Migration(migrations.Migration):
     dependencies = [
        
         ('carts', '0015_alter_cartitem_order'),
+       
     ]
 
     operations = [
         migrations.AddField(
             model_name='cart',
             name='coupon',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='custom_admin_panel.coupon'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='carts.coupon'),
         ),
     ]

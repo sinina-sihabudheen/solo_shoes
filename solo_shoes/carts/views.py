@@ -73,50 +73,7 @@ def add_cart(request, product_id):
 
 
 
-# def add_cart(request, product_id):
-#     # product = Product.objects.get(id=product_id)
-#     product= get_object_or_404(Product,id=product_id)
 
-#     # try:
-#     #     product = Product.objects.get(id=product_id)
-#     # except Product.DoesNotExist:
-        
-#     #     messages.error(request, "Product not found.")
-#     #     return redirect('carts:carts')
-    
-#     current_user = request.user
-    
-#     if current_user.is_authenticated:
-        
-#         cart, _ = Cart.objects.get_or_create(user=current_user, complete = False)
-#         if not cart.shopping_cart:
-#             cart.shopping_cart, created = ShoppingCart.objects.get_or_create(session_key=request.session.session_key)
-#             cart.save()
-    
-
-#     try:
-#         cart_item = CartItem.objects.get(order=cart, product=product)
-#         cart_item.quantity += 1
-#         product.stock-=1
-#         product.save()
-#     except CartItem.DoesNotExist:
-#         cart_item = CartItem.objects.create(order=cart, product=product, quantity=1)    
-#         cart_item.save()   
-#         product.stock -= 1
-#         product.save()
-        
-#     try:
-#          wishlist = Whishlist.objects.get(user=request.user)
-#     except ObjectDoesNotExist:
-   
-#         wishlist = Whishlist(user=request.user)
-#         wishlist.save()
-
-#     wishlist.products.remove(product)
-#     wishlist.save()
-#     messages.success(request, f"{product.product_name} added to the cart.")
-
-#     return redirect('carts:carts')
 
 def remove_cart_item(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -186,33 +143,6 @@ def update_cart(request):
     return redirect('carts:carts')
 
 
-# def update_cart(request):
-#     if request.method == 'POST':
-#         product_id = request.POST.get('product_id')
-#         action = request.POST.get('action')
-#         product = Product.objects.get(id=product_id)
-#         cart = Cart.objects.get(user=request.user, complete=False)
-
-#         cart_item, created = CartItem.objects.get_or_create(order=cart, product__id=product_id)
-        
-#         if not created:
-#             if action == 'increment':
-#                 if product.stock > 0:
-#                     cart_item.quantity += 1
-#                     product.stock -= 1
-#                     product.save()
-#             elif action == 'decrement':
-#                 cart_item.quantity -= 1
-#                 product.stock += 1
-#                 product.save()
-
-#                 if cart_item.quantity <= 0:
-#                     cart_item.delete()
-
-#             cart_item.save()
-#             messages.success(request, 'Cart updated successfully.')
-
-#     return redirect('carts:carts')
 
 def carts(request, total=0, quantity=0):
     try:
@@ -344,7 +274,7 @@ def checkout(request):
 @login_required
 def apply_coupon(request, cart_id):
     cart = get_object_or_404(Cart, id=cart_id)
-    # cart = Cart.objects.get(user=request.user, id=cart_id)
+    cart = Cart.objects.get(user=request.user, id=cart_id)
     
     if request.method == 'POST':
         coupon_code = request.POST.get('coupon')

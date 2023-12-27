@@ -4,6 +4,9 @@ from django.contrib.auth.models import User
 from store.models import Offer, OfferCategory
 from user_profile.models import ShippingAddress
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+
+
 
 
 # Create your models here.
@@ -17,7 +20,8 @@ class Coupon(models.Model):
     is_expired = models.BooleanField(default=False)
     discount_price = models.PositiveIntegerField(default=100)
     minimum_amount = models.IntegerField(default=500)
-    used_by = models.ManyToManyField(User, blank=True) 
+    # used_by = models.ManyToManyField(User, blank=True) 
+    used_by = models.ManyToManyField(get_user_model(), blank=True)
     status = models.BooleanField(default=True)
     
     
@@ -41,7 +45,7 @@ class Cart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE, null=True, blank=True)
     date_added = models.DateTimeField(default=timezone.now)
     complete = models.BooleanField(default=False, null=True, blank=False)
-    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL,null=True,blank=True)
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL,null=True,blank=True, swappable=True)
     PAYMENT_METHOD_CHOICES = (
         ('COD', 'Cash on Delivery'),
         ('RAZ', 'Paid With Razorpay'), 
@@ -87,7 +91,7 @@ class Cart(models.Model):
 
     
 class CartItem(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True)    
+    product = models.ForeignKey(on_delete=models.SET_NULL, null=True, blank=True, to='custom_admin_panel.Product')    
     order = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True, blank=True) 
     quantity = models.IntegerField(default=1, null=True, blank=True)
     # date_added = models.DateTimeField(auto_now_add=True)

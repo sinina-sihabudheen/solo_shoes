@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CartItem,Cart,ShoppingCart,Whishlist,Coupon
+from .models import CartItem,Cart,ShoppingCart,Whishlist, Coupon
 
 # Register your models here.
 class CartAdmin(admin.ModelAdmin):
