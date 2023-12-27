@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('carts', '0013_remove_cartitem_variation'),
+        ('carts', '0012_cart_transaction_id'),
     ]
 
     operations = [

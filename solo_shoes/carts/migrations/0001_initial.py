@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
                 ('delivery_status', models.CharField(choices=[('PL', 'Order placed'), ('DS', 'Dispatched'), ('SH', 'Shipped'), ('OFD', 'Out for Delivery'), ('D', 'Delivered'), ('CN', 'Order Cancelled'), ('RT', 'Returned')], default='PL', max_length=3)),
                 ('order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='carts.cart')),
                 ('product', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='custom_admin_panel.product')),
-                ('variation', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='variation', to='custom_admin_panel.productvariance')),
+                
             ],
         ),
     ]
