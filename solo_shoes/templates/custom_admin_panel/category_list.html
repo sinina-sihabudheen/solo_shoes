@@ -18,15 +18,12 @@
                             <ul class="navbar-nav w-100">
                                 <li class="nav-item w-100">
                                     <!-- Search Form -->
-                                    <form method="get" action="{% url 'custom_admin_panel:category_list' %}" class="nav-link mt-2 mt-md-0 col-12 d-lg-flex search">
+                                    <form method="get" action="{% url 'custom_admin_panel:category_management' %}" class="nav-link mt-2 mt-md-0 col-12 d-lg-flex search">
                                         {% csrf_token %}
-                                        <input type="text" name="q"  placeholder="Search Category" value="{{ query }}" class="form-control mb-1 text-light">
-                                        <button type="submit" class="btn-inverse-info mb-1">Search</button>
-                                        
+                                        <input type="text" name="q"  placeholder="Search Category" class="form-control mb-1 text-light">
+                                        <button type="submit" class="btn-inverse-info mb-1">Search</button>                                        
                                     </form>
-
-
-                                    </li>
+                                </li>
                             </ul>
                         </div>
 

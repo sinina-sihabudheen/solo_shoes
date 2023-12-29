@@ -23,12 +23,14 @@ urlpatterns = [
     path('categories/edit/<int:category_id>/', views.edit_category, name='edit_category'),
     path('categories/block/<int:category_id>/', views.block_category, name='block_category'),
     path('categories/unblock/<int:category_id>/', views.unblock_category, name='unblock_category'),
+    path('categories/search', views.category_management, name='category_management'),
    
     path('products/', views.product_list, name='product_list'),
     path('products/add/', views.add_product, name='add_product'),
     path('products/edit/<int:product_id>/', views.edit_product, name='edit_product'),
     path('products/block/<int:product_id>/', views.block_product, name='block_product'),
     path('products/unblock<int:product_id>/', views.unblock_product, name='unblock_product'),
+    path('products/search', views.product_management, name='product_management'),
 
     path('orders/', views.order, name='order'),
     path('orders/edit/<int:order_item_id>/', views.order_edit, name='order_edit'),

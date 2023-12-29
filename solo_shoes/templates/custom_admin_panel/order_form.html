@@ -8,7 +8,7 @@
                 <div class="card">
                     <div class="card-body">
                        <h2 class="mb-3">Update</h2>
-                        <form method="post" enctype="multipart/form-data" id="productForm" action="{% url 'custom_admin_panel:order_edit' order_item.id %}">
+                        <form method="post" enctype="multipart/form-data" id="CartItemForm" action="{% url 'custom_admin_panel:order_edit' order_item.id %}">
                             {% csrf_token %}
                             {{ form.as_p }}
                            

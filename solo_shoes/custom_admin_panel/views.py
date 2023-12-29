@@ -1,9 +1,9 @@
-from datetime import datetime, timedelta
+
 from django.db.models import Prefetch
 from django.db.models import Q, F, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from decimal import Decimal
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from django.utils import timezone
 from carts.models import Cart, CartItem, Coupon
 # from custom_admin_panel.helpers import render_to_pdf
@@ -14,9 +14,9 @@ from django.contrib.auth.models import User
 from django.views.decorators.cache import never_cache
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
-
-from .forms import CartsForm, ProductForm, CategoryForm, ProductImageFormSet
-from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
+from .forms import CartItemForm, ProductForm, CategoryForm, ProductImageFormSet
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 # from django.template.loader import get_template
 # from xhtml2pdf import pisa
 from django.views.decorators.http import require_GET
@@ -144,11 +144,6 @@ def user_management(request):
     
     if search_query:
         cus = cus.filter(Q(username__icontains=search_query) | Q(email__icontains=search_query))
-    
-    # debugging print statements
-    print(f"Search query: {search_query}")
-    print(f"Filtered users: {cus}")
-
     context = {
         'cus': cus,
         'search_query': search_query,
@@ -220,6 +215,24 @@ def category_list(request):
 
     }
 
+    return render(request, 'custom_admin_panel/category_list.html', context)
+
+@login_required(login_url='custom_admin_panel:adminlogin')
+def category_management(request):
+    search_query = request.GET.get('q')
+    categories = Category.objects.all()
+    
+    if search_query:
+        categories = categories.filter(category_name__icontains=search_query)
+    
+    # debugging print statements
+    print(f"Search query: {search_query}")
+    print(f"Filtered users: {categories}")
+
+    context = {
+        'categories': categories,
+        'search_query': search_query,
+    }
     return render(request, 'custom_admin_panel/category_list.html', context)
 
 
@@ -305,19 +318,31 @@ def edit_product(request, product_id):
 
     return render(request, 'custom_admin_panel/product_form.html', {'form': form, 'formset': formset, 'product': product})
 
+@login_required(login_url='custom_admin_panel:adminlogin')
+def product_management(request):
+    search_query = request.GET.get('key')
+    products = Product.objects.all()
+    
+    if search_query:
+        products = products.filter(product_name__icontains=search_query)
+    
+    # debugging print statements
+    print(f"Search query: {search_query}")
+    print(f"Filtered users: {products}")
 
+    context = {
+        'products': products,
+        'search_query': search_query,
+    }
+    return render(request, 'custom_admin_panel/product_list.html', context)
 
 #Order Management...
 @login_required(login_url='custom_admin_panel:adminlogin')
 def order(request):
-    # target_payment_method = 'COD'  
-    
+       
     orders_with_items = Cart.objects.filter(complete=True).prefetch_related(
         Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
-    ).all()
-    # orders_with_items = Cart.objects.prefetch_related(
-    #     Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
-    # ).all()
+    ).all()   
 
     context = {
         'orders_with_items': orders_with_items,
@@ -329,12 +354,12 @@ def order_edit(request, order_item_id):
     order_item = get_object_or_404(CartItem, id=order_item_id)
 
     if request.method == 'POST':
-        form = CartsForm(request.POST, instance=order_item)
+        form = CartItemForm(request.POST, instance=order_item)
         if form.is_valid():
             form.save()
             return redirect('custom_admin_panel:order')
     else:
-        form = CartsForm(instance=order_item)
+        form = CartItemForm(instance=order_item)
 
     context = {
         'form': form,
@@ -366,13 +391,9 @@ def category_off_add(request):
     if request.method == 'POST':
         form = OfferCategoryForm(request.POST, request.FILES)
         if form.is_valid():
-            offer_category = form.save(commit=False)
-            
+            offer_category = form.save(commit=False)            
 
             now = datetime.now(timezone.get_current_timezone())
-            print("Now:", now)
-            print("Start Date:", offer_category.date_start)
-            print("End Date:", offer_category.date_end)
             if offer_category.date_start <= now < offer_category.date_end:
                 offer_category.active = True
             else:
@@ -472,17 +493,14 @@ def sales_report(request):
         delivered_order_items.values('product__product_name')
         .annotate(total_sold=Sum('quantity'))
         .order_by('-total_sold')[:6]
-    )
-    print('MOST SOLDLllllll',most_sold_products)
+    )    
     return render(request,'custom_admin_panel/sales_report.html', { 'most_sold_products':most_sold_products })
 
 @require_GET
 def get_sales_data(request, period):
-    print("getting inside inside weew")
     # Your logic to filter and aggregate data based on the selected period
     # Example: Weekly sales
     if period == 'week':
-        print("getting inside week")
         start_date = timezone.now().date() - timezone.timedelta(days=6)
         order_items = CartItem.objects.filter(order__date_added__gte=start_date)
         data = (
@@ -525,6 +543,31 @@ def get_sales_data(request, period):
 
     return JsonResponse({'labels': labels, 'data': sales_data})
 
+# @login_required(login_url='custom_admin_panel:adminlogin')
+# def sales_details(request):
+#     if request.method == 'POST':
+#         start_date_str = request.POST.get('startDate')
+#         end_date_str = request.POST.get('endDate')
+       
+#         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+#         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+        
+#         order_items = CartItem.objects.filter(order__date_added__range=(start_date, end_date), order__isnull=False)
+     
+#         product_quantities = order_items.values('product__product_name').annotate(total_quantity=Sum('quantity'))  
+
+#         context = {
+#             'order_items': order_items,
+#             'product_quantities': product_quantities,
+#             'start_date':start_date_str,
+#             'end_date':end_date_str,
+
+#         } 
+
+       
+#     return render(request, 'custom_admin_panel/salespdf.html', context)
+
+
 @login_required(login_url='custom_admin_panel:adminlogin')
 def sales_details(request):
     if request.method == 'POST':
@@ -534,20 +577,31 @@ def sales_details(request):
         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
         
-        order_items = CartItem.objects.filter(order__date_added__range=(start_date, end_date), order__isnull=False)
+        # Use timezone-aware dates to handle Django's timezone settings
+        start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
+        end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
+        
+        # Filter orders based on the date range
+        order_items = CartItem.objects.filter(
+            order__date_added__range=(start_date, end_date),
+            order__isnull=False
+        )
      
         product_quantities = order_items.values('product__product_name').annotate(total_quantity=Sum('quantity'))  
 
         context = {
             'order_items': order_items,
             'product_quantities': product_quantities,
-            'start_date':start_date_str,
-            'end_date':end_date_str,
-
+            'start_date': start_date_str,
+            'end_date': end_date_str,
         } 
 
-       
-    return render(request, 'custom_admin_panel/salespdf.html', context)
+        return render(request, 'custom_admin_panel/salespdf.html', context)
+
+    # Handle the case when the request method is not POST
+    return HttpResponseBadRequest("Invalid request method")
+
+
 
 def coupon_list(request):
     coupons= Coupon.objects.all()
