@@ -22,18 +22,5 @@ class Migration(migrations.Migration):
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
-        migrations.RemoveField(
-            model_name='orderitem',
-            name='order',
-        ),
-        migrations.RemoveField(
-            model_name='orderitem',
-            name='product',
-        ),
-        migrations.DeleteModel(
-            name='Order',
-        ),
-        migrations.DeleteModel(
-            name='OrderItem',
-        ),
+       
     ]

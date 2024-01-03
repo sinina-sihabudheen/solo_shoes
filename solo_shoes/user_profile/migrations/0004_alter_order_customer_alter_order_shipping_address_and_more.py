@@ -13,17 +13,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='order',
-            name='customer',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
-            preserve_default=False,
-        ),
-        migrations.AlterField(
-            model_name='order',
-            name='shipping_address',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='user_profile.shippingaddress'),
-        ),
+       
         migrations.AlterField(
             model_name='shippingaddress',
             name='user',
