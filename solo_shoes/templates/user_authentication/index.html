@@ -394,7 +394,9 @@
             });
         });
     </script>
-    <script>
+
+<!-- <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script> -->
+ <script>
         const searchInput = document.getElementById('searchInput');
         const searchResults = document.getElementById('searchResults');
         const searchForm = document.getElementById('searchForm');
@@ -411,7 +413,7 @@
                 .then(response => response.json())
                 .then(data => {
                     searchResults.innerHTML = '';
-                    
+                    console.log(data)
     
                     if (data.length > 0) {
                         const resultList = document.createElement('ul');
@@ -421,13 +423,12 @@
                             const link = document.createElement('a');
     
                             link.textContent = result.product_name;
-                            link.href = `/store/product/${result.productId}/`; 
+                            link.href = `/store/product/${result.productId}`; 
                             console.log('SEARCH SCRIPT WORKING');
     
                             listItem.appendChild(link);
                             resultList.appendChild(listItem);
                         });
-    
                         searchResults.appendChild(resultList);
                     } else {
                         searchResults.innerHTML = 'No results found.';
@@ -442,21 +443,6 @@
                 searchResults.innerHTML = '';
             }
         });
-    
-        // Optional: Prevent form submission when clicking on a suggestion
-        searchResults.addEventListener('click', function(event) {
-            if (event.target.tagName === 'A') {
-                event.preventDefault();
-                searchForm.submit();
-            }
-        });
-    </script>
-    
-
-
-
+    </script>   
 </body>
-
-
-<!-- molla/index-10.html  22 Nov 2019 09:58:22 GMT -->
 </html>

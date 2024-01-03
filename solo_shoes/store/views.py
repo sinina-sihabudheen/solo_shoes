@@ -64,6 +64,8 @@ def shop(request, category=None):
     }
     return render(request, 'store/shop.html', context)
 
+from django.shortcuts import render
+
 def product_list(request):
     price_ranges = request.GET.getlist('price_range')
 
@@ -84,7 +86,11 @@ def product_list(request):
     context = {
         'products': products,
     }
+
+    # Render a partial HTML response
     return render(request, 'store/shop.html', context)
+    # return JsonResponse({context})
+
 
 
 

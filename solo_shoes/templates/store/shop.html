@@ -16,7 +16,7 @@
                 	<div class="row">
                 		<div class="col-lg-9">
 							
-							<div class="products mb-3">								
+							<div class="products mb-3" id="products-container">								
                                 <div class="row justify-content-center">
                                     {% if filtered_products %}
 									{% for product in filtered_products %}
@@ -39,11 +39,11 @@
                                                 <div class="product-action-vertical">
                                                     <a href="#" class="btn-product-icon btn-wishlist btn-expandable" data-product-id="{{product.id}}"><span>add to wishlist</span></a>
                                                 </div><!-- End .product-action-vertical -->
-												<!-- <div class="product-action-vertical"> -->
+												
                                                     {% if product.stock <= 0 %}
                                             		 <span>Out Of Stock</span>
 											 		{% endif %}
-                                                <!-- </div>End .product-action-vertical -->
+                                              
 
                                                 <div class="product-action">
 													{% if user.is_authenticated %}
@@ -200,7 +200,7 @@
 								{% endif %}
 							</nav>
                 		</div><!-- End .col-lg-9 -->
-                		<aside class="col-lg-3 order-lg-first">
+                		<aside class="col-lg-3 order-lg-first mt-5">
                 			<div class="sidebar sidebar-shop">
                 				<div class="widget widget-collapsible">
     								<h3 class="widget-title">
@@ -246,16 +246,12 @@
 															<label class="custom-control-label" for="price-range-3">2000-5000</label>
 														</div>
 													</div>
-													<button type="button" id="apply-filter-button">Apply Filter</button>
-												</form>
-												
-												
-												
+													<button type="submit" id="apply-filter-button" style="border-color: rgb(218, 218, 223); border-radius: 5px;">Apply Filter</button>
+												</form>											
+																								
 											</div>
 										</div>
 									</div>
-
-        					
                 			</div><!-- End .sidebar sidebar-shop -->
                 		</aside><!-- End .col-lg-3 -->
                 	</div><!-- End .row -->
@@ -285,6 +281,7 @@
     <script src="{% static 'user_auth/assets/js/bootstrap-input-spinner.js' %}"></script>
     <script src="{% static 'user_auth/assets/js/jquery.magnific-popup.min.js' %}"></script>
     <script src="{% static 'user_auth/assets/js/nouislider.min.js' %}"></script>
+	
     <!-- Main JS File -->
     <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
 
@@ -324,24 +321,24 @@
 
 <script>
     $(document).ready(function() {
-    console.log("Script loaded successfully");
+    console.log("Script loaded price successfully");
 
-    $('#price-filter-form').submit(function(e) {
-        e.preventDefault();  // Prevent the form from submitting in the default way
 
-        var formData = $(this).serialize();
-        console.log("Form Data:", formData);
+$('#price-filter-form').submit(function(e) {
+    e.preventDefault();
+    var formData = $('input[name="price_range"]:checked').serialize();
+    console.log("Form Data:", formData);
 
-        // Make an AJAX request to the server
+    if (formData) {
         $.ajax({
             type: 'GET',
-            url: '/store/product_list/',  // Update the URL as needed
+            url: '/store/product_list/',
             data: formData,
             success: function(response) {
                 console.log("Received Data:", response);
-                
-                // Update the content on your page with the response, for example:
-                $('#products-container').html(response);
+
+                // Replace the content of the '.products' element with the entire HTML response
+                $('.mainBody').html(response);
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
@@ -349,10 +346,62 @@
                 console.log('Status:', status);
             }
         });
-    });
+    } else {
+        console.log("Form data is null");
+    }
+});
+
 });
 
 </script>
+<script>
+	const searchInput = document.getElementById('searchInput');
+	const searchResults = document.getElementById('searchResults');
+	const searchForm = document.getElementById('searchForm');
+
+	searchInput.addEventListener('input', function() {
+		const query = searchInput.value.trim();
+
+		if (query.length === 0) {
+			searchResults.innerHTML = '';
+			return;
+		}
+
+		fetch(`/search/?q=${query}`)
+			.then(response => response.json())
+			.then(data => {
+				searchResults.innerHTML = '';
+				console.log(data)
+
+				if (data.length > 0) {
+					const resultList = document.createElement('ul');
+
+					data.forEach(result => {
+						const listItem = document.createElement('li');
+						const link = document.createElement('a');
+
+						link.textContent = result.product_name;
+						link.href = `/store/product/${result.productId}`; 
+						console.log('SEARCH SCRIPT WORKING');
+
+						listItem.appendChild(link);
+						resultList.appendChild(listItem);
+					});
+					searchResults.appendChild(resultList);
+				} else {
+					searchResults.innerHTML = 'No results found.';
+				}
+			})
+			.catch(error => console.error('Error fetching search results:', error));
+	});
+
+	// Optional: Close the suggestion dropdown when clicking outside
+	document.addEventListener('click', function(event) {
+		if (!event.target.closest('#searchResults')) {
+			searchResults.innerHTML = '';
+		}
+	});
+</script> 
 
 
 </body>
