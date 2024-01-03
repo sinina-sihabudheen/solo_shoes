@@ -95,8 +95,8 @@ WSGI_APPLICATION = 'solo_shoes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'myproject',
-        'USER': 'myprojectuser',
+        'NAME': 'myprojects',
+        'USER': 'myprojectusers',
         'PASSWORD': 'password',
         'HOST': 'localhost',
         'PORT': '5432',
