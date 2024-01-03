@@ -16,7 +16,7 @@ class ShoppingCart(models.Model):
 class Coupon(models.Model):
     coupon_code = models.CharField(max_length=20, unique=True)
     valid_from = models.DateTimeField(default=timezone.now)
-    valid_till = models.DateTimeField()
+    valid_till = models.DateTimeField(default=timezone.now() + timezone.timedelta(days=30))
     is_expired = models.BooleanField(default=False)
     discount_price = models.PositiveIntegerField(default=100)
     minimum_amount = models.IntegerField(default=500)
@@ -53,17 +53,27 @@ class Cart(models.Model):
 
     )
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES,  null=True, blank=True)
-    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
+    shipping_address_for_orders = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
     shopping_cart = models.ForeignKey(ShoppingCart,on_delete=models.CASCADE, null=True, blank=True)
+    full_name = models.CharField(max_length=255, default='default_value')
+    address_lines = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+    pin_code = models.CharField(max_length=10, null=True, blank=True)
+    country = models.CharField(max_length=255, null=True, blank=True)
+    mobile = models.CharField(max_length=15, default='default_value')
+
 
     transaction_id = models.CharField(max_length=200,null=True)
 
-
+    cart_total_at_order = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    cart_items_total_at_order = models.PositiveIntegerField(default=0)
     objects = models.Manager()  # Ensure that the objects manager is defined
 
 
     def __str__(self):
-        return str(self.id)
+        return str(self.id)   
+    
     
     
     @property
@@ -73,16 +83,23 @@ class Cart(models.Model):
         
         if self.coupon:            
             if self.coupon.minimum_amount <= total:
-                return total - self.coupon.discount_price
-
+                return total - self.coupon.discount_price        
+        return total
+    
+    @property
+    def get_cart_total_at_order(self):
+        orderitems = self.cartitem_set.all()
+        total = sum(item.get_total_at_order for item in orderitems)
         
+        if self.coupon:            
+            if self.coupon.minimum_amount <= total:
+                return total - self.coupon.discount_price        
         return total
 
     @property
     def get_cart_items(self):
         orderitems = self.cartitem_set.all()
-        total = sum(item.quantity for item in orderitems)
-        
+        total = sum(item.quantity for item in orderitems)        
         return total
 
     
@@ -94,6 +111,11 @@ class CartItem(models.Model):
     product = models.ForeignKey(on_delete=models.SET_NULL, null=True, blank=True, to='custom_admin_panel.Product')    
     order = models.ForeignKey(Cart, on_delete=models.SET_NULL, null=True, blank=True) 
     quantity = models.IntegerField(default=1, null=True, blank=True)
+    product_name_at_order = models.CharField(max_length=255)  # Store the product name at the time of order placement
+    product_description_at_order = models.TextField(blank=True)
+    product_price_at_order = models.IntegerField(default=100)
+    product_stock_at_order = models.IntegerField(default=0)
+
     # date_added = models.DateTimeField(auto_now_add=True)
     ORDER_STATUS_CHOICES = [
         ('PL', 'Order placed'),
@@ -108,37 +130,45 @@ class CartItem(models.Model):
     ]
     
     delivery_status = models.CharField(max_length=3, choices=ORDER_STATUS_CHOICES, default='C')
-    
+    delivery_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)    
 
     
     @property
     def get_total(self):
-        # Check if there is an active offer for the product
-        product_offer = Offer.objects.filter(product=self.product, active=True).first()
-
-        # Check if there is an active offer for the product category
+        product_offer = Offer.objects.filter(product=self.product, active=True).first()      
         category_offer = OfferCategory.objects.filter(category=self.product.category, active=True).first()
 
-        if product_offer and category_offer:
-            # If both product and category have offers, choose the greater discount
+        if product_offer and category_offer:            
             discount_percentage = max(product_offer.discount_percentage, category_offer.discount_percentage)
         elif category_offer:
             discount_percentage = category_offer.discount_percentage
         elif product_offer:
             discount_percentage = product_offer.discount_percentage
-        else:
-            # If no active offer, use the regular product price
+        else:          
             return self.product.price * self.quantity
-
-        # Calculate the discounted price
+               
         discounted_price = self.product.price - (self.product.price * (discount_percentage / 100))
-        total = discounted_price * self.quantity
-        
-
-
+        total = discounted_price * self.quantity    
         return total
+    
+    @property
+    def get_total_at_order(self):
+        
+        product_offer = Offer.objects.filter(product=self.product, active=True).first()      
+        category_offer = OfferCategory.objects.filter(category=self.product.category, active=True).first()
 
-
+        if product_offer and category_offer:           
+            discount_percentage = max(product_offer.discount_percentage, category_offer.discount_percentage)
+        elif category_offer:
+            discount_percentage = category_offer.discount_percentage
+        elif product_offer:
+            discount_percentage = product_offer.discount_percentage
+        else:          
+            return self.product_price_at_order * self.quantity
+      
+        discounted_price = self.product_price_at_order - (self.product_price_at_order * (discount_percentage / 100))
+        total = discounted_price * self.quantity
+        return total
 
 class Whishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

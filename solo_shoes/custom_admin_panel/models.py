@@ -29,6 +29,8 @@ class Product(models.Model):
     modified_date = models.DateTimeField(auto_now=True)
     offer = models.ForeignKey(Offer, on_delete=models.SET_NULL, null=True, blank=True)
     category_offer = models.ForeignKey(OfferCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    
+
 
     
     

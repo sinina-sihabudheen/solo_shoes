@@ -91,11 +91,11 @@
                                             <tr>
                                                 <td>{{ order_item.order.id }}</td>
                                                 <td>{{ order_item.order.user.username }}</td>
-                                                <td>{{ order_item.product.product_name }}</td>                                               
+                                                <td>{{ order_item.product_name_at_order }}</td>                                               
                                                 <td>{{ order_item.order.date_added }}</td>
                                                 <td>{{ order_item.order.payment_method }}</td>                                              
                                                 <td>{{ order_item.quantity }}</td>
-                                                <td>{{ order_item.get_total }}</td>
+                                                <td>{{ order_item.get_total_at_order }}</td>
                                                 
                                             </tr>
                                     {% endfor %}
@@ -105,7 +105,7 @@
                             </table>
                             <div class="row mt-4">
                                 <div class="col-12 text-center">
-                                    <button class="btn btn-outline-info" id="printButton">sales report</button>
+                                    <button class="btn btn-outline-info" id="printButton">DOWNLOAD</button>
 
                                 </div>
                             </div>

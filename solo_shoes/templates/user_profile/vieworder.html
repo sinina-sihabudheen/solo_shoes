@@ -46,14 +46,15 @@
                         alt="{{ order_item.product.name }}">
                 </div>
                 <div class="col-9 pl-5 mt-2">
-                    <h5 class="card-title">{{ cart_item.product.product_name }}</h5>
+                    <h5 class="card-title">{{ cart_item.product_name_at_order }}</h5>
                     
                     <p class="card-text">
                         Quantity: <b>{{ cart_item.quantity }}</b><br>
-                        Payment Method<i class="fa-solid fa-file-invoice-dollar"></i> {{ order.payment_method }}
+                        Payment Method : {{ order.payment_method }}
                     </p>
 
-                    <h5 class="card-title mb-2">₹ {{ cart_item.get_total }} </h5>
+                    <p class="card-text">Product Price: ₹ {{ cart_item.product_price_at_order }} </p>
+                    <h5 class="card-title mb-2">Subtotal Price: ₹ {{ cart_item.get_total_at_order }} </h5>
                    
                 </div>
                 <div class="mb-3">{% if cart_item.delivery_status == 'CN' %}
@@ -61,7 +62,7 @@
                     {% elif cart_item.delivery_status == 'D' %}
                     <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
                     {% elif cart_item.delivery_status == 'SH' %}
-                    <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
+                    <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Shipped</strong></span>
                     {% else %}
                     <a href="{% url 'user_profile:cancel_order' cart_id=cart_item.id %}" >Cancel Order</a>
                     {% endif %}
@@ -75,11 +76,18 @@
 
         </div>
         <div class="col-12 row d-flex justify-content-between ">
-            <h6 class="mx-5">Delivery to : <b>{{ order.shipping_address.full_name }},{{ order.shipping_address.address_lines }},<br>
-                {{ order.shipping_address.city }}, {{ order.shipping_address.state }},{{ order.shipping_address.pin_code }},<br>
-                {{ order.shipping_address.mobile }}
+          
+            <h6 class="mx-5">Applied Coupon:  {% if order.coupon %}
+                {{ order.coupon.coupon_code }}
+                {% else %} None
+                {% endif %}
+            </h6>
+            
+            <h6 class="mx-5">Delivery to : <b>{{ order.full_name }},{{ order.address_lines }},<br>
+                {{ order.city }}, {{ order.state }},{{ order.pin_code }},<br>
+                {{ order.mobile }}
             </b></h6>
-            <h5 class="mx-5">Total : <b>₹{{ order.get_cart_total }}</b></h5>
+            <h5 class="mx-5">Total : <b>₹{{ order.cart_total_at_order }}</b></h5>
         </div>
         
     </div>

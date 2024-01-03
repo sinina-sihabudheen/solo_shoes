@@ -56,14 +56,27 @@ def home(request):
       }
       return render(request, 'user_authentication/index.html' , context)
 
-def search_suggestions(request):
-    print("search...")
-    term = request.GET.get('term', '')
-    suggestions = Product.objects.filter(product_name__icontains=term)[:5] 
-    print(suggestions)
-    data = [{'label': product.product_name, 'value': product.product_name, 'url': reverse('store:product', args=[product.id])} for product in suggestions]
+# def search_suggestions(request):
+#     print("Search product in home page")
+#     term = request.GET.get('term', '')
+#     suggestions = Product.objects.filter(product_name__icontains=term)[:5] 
+#     data = [{'label': product.product_name, 'value': product.product_name, 'url': reverse('store:product', args=[product.id])} for product in suggestions]
+#     return JsonResponse(data, safe=False)
+
+# In your views.py
+
+def search_results(request):
     
-    return JsonResponse(data)
+    query = request.GET.get('q', '')
+    results = []
+
+    if query:
+        print("ENTERED INTO SEARCH")
+        results = list(Product.objects.filter(product_name__icontains=query).values('product_name')[:5])
+
+
+    return JsonResponse(results, safe=False)
+
 
 
 

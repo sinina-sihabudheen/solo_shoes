@@ -12,21 +12,29 @@
     <meta name="keywords" content="HTML5 Template">
     <meta name="description" content="Molla - Bootstrap eCommerce Template">
     <meta name="author" content="p-themes">
+
     
-    <!-- Plugins CSS File -->
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
     <link rel="stylesheet" href="{% static 'user_auth/assets/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'user_auth/assets/css/plugins/owl-carousel/owl.carousel.css' %}">
     <link rel="stylesheet" href="{% static 'user_auth/assets/css/plugins/magnific-popup/magnific-popup.css' %}">
     <link rel="stylesheet" href="{% static 'user_auth/assets/css/plugins/jquery.countdown.css' %}">
     
-    <!-- Main CSS File -->
+   
     <link rel="stylesheet" href="{% static 'user_auth/assets/css/style.css' %}">
     <link rel="stylesheet" href="{% static 'user_auth/assets/css/skins/skin-demo-10.css' %}">
     <link rel="stylesheet" href="{% static 'user_auth/assets/css/demos/demo-10.css' %}">
-    <!-- Include these scripts in the head section of your HTML -->
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.7.0/nouislider.min.js"></script> -->
 
+
+
+    
     
     <script>
         var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -88,7 +96,7 @@
           /* border-radius: 3rem; */
           background: rgb(0, 0, 0);
           background: radial-gradient(circle at 10% 20%, rgb(87, 108, 117) 0%, rgb(37, 50, 55) 100.2%);
-          
+      } 
       }
     </style>
     
@@ -138,17 +146,36 @@
                     </ul><!-- End .menu -->
                 </nav><!-- End .main-nav -->
 
-                <div class="header-search">
-                    /* <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a> */
-                    <form action="#" method="get" id="searchFormhome">
-                        <div class="header-search-wrapper search-wrapper-wide">
-                            <label for="q" class="sr-only">Search</label>
-                            <input type="search" class="form-control" name="q" id="q" placeholder="Search in..." required>
-                            <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+               
+                <!-- <div class="header-search">
+                      <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
+                        <form action="#" method="get" id="searchFormhome">
+                            <div class="header-search-wrapper search-wrapper-wide">
+                                <label for="q" class="sr-only">Search</label>
+                                <input type="search" class="form-control" name="q" id="q" placeholder="Search product ..." required>
+                                <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+                            </div>
+                        </form>   
+                </div> -->
+                <!-- <div class="header-search">
+                      <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
+                        <form action="#" method="get" id="searchFormhome">
+                            <div class="header-search-wrapper search-wrapper-wide">
+                                <label for="q" class="sr-only">Search</label>
+                                <input type="search" class="form-control" name="q" id="q" placeholder="Search product ..." required>
+                                <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
+                            </div>
+                        </form>   
+                </div> -->
+                
+                <form id="searchForm" action="{% url 'user_authentication:search_results' %}" method="get">
+                    <input type="text" id="searchInput" name="q" placeholder="Search products...">
+                    <button type="submit">Search</button>
+                </form>
+                <div id="searchResults"></div>
+               
+   
 
-                        </div><!-- End .header-search-wrapper -->
-                    </form>
-                </div><!-- End .header-search -->
                 
                 {% if user.is_authenticated %}
                 <div class="dropdown cart-dropdown">

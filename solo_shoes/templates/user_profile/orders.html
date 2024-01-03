@@ -39,57 +39,48 @@
             </div>
         </div>
         <hr class="m-0 mb-1">
-        <div class="row col-12 d-flex mb-0 p-5 ">
+        <div class="row col-12 d-flex flex-wrap">
             {% for order_item in order.cartitem_set.all %}
-            <div class="mb-5">
-                <div class="col-md-3 col-12 bg-white d-flex align-items-center" style="border-radius: 6px;">
+              <div class="mb-5 col-12 px-0">
+                <div class="d-flex flex-row align-items-center"> 
+                  <div class="col-2 px-0">
                     <img class="" src="{{ order_item.product.productimage_set.first.image.url }}"
-                        alt="{{ order_item.product.name }}">
-                </div>
-                <div class="col-9 pl-5 mt-2">
-                    <h5 class="card-title">{{ order_item.product.product_name }}</h5>
-                    
-                    <!-- <p class="card-text">
-                        Quantity: <b>{{ order_item.quantity }}</b><br>
-                        <i class="fa-solid fa-file-invoice-dollar"></i> {{ order.payment_method }}
-                    </p> -->
-
-                    <!-- <h5 class="card-title mb-2">₹ {{ order_item.get_total }} </h5> -->
-                    <!-- <div class="card-footer row "
-                        style="background: #F3F3F9; display: flex; justify-content: space-between; align-items: center; width: 100%;">                   
-                    </div> -->
-                </div>
-                <div class="mb-3">{% if order_item.delivery_status == 'CN' %}
-                    <span class="mt-1 label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
-                    {% elif order_item.delivery_status == 'D' %}
-                    <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
-        
-                    {% else %}
-                    <a href="{% url 'user_profile:cancel_order' cart_id=order_item.id %}" >Cancel Order</a>
-                    {% endif %}
-                </div>
-                <div class="card-footer row "
-                        style="background: #F3F3F9; display: flex; justify-content: space-between; align-items: center; width: 100%;">                   
+                         alt="{{ order_item.product.name }}">
+                    <div class="mt-2">{% if order_item.delivery_status == 'CN' %}
+                        <span class="label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
+                      {% elif order_item.delivery_status == 'D' %}
+                        <span class="label label-success" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
+                      {% elif order_item.delivery_status == 'SH' %}
+                        <span class="label label-success" style="color: rgb(42, 165, 79);"><strong>Order Shipped</strong></span>
+                      {% else %}
+                        <span class="label label-success" style="color: rgb(42, 165, 79);"><strong>Order Placed</strong></span>
+                      {% endif %}
                     </div>
-            </div>
-
+                  </div>
+                  <div class="col-8 pl-4">
+                    <h5 class="card-title">{{ order_item.product_name_at_order }}</h5> 
+                  </div>
+                </div>
+                <div class="card-footer row"
+                     style="background: #F3F3F9; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                </div>
+              </div>
             {% endfor %}
-
-        </div>
+          </div>
+          
         <div class="col-12 row d-flex justify-content-between ">
-            <!-- <h6 class="mx-5">Delivery to : <b>{{ order.shipping_address.full_name }},{{ order.shipping_address.address_lines }}</b></h6> -->
-            <h5 class="mx-5">Total : <b>₹{{ order.get_cart_total }}</b></h5>
+            <h5 class="mx-5">Total : <b>₹{{ order.cart_total_at_order }}</b></h5>
         </div>
         
     </div>
     {% endfor %}
+    <br>
+    {% else %}
+    <h1>No orders found.</h1>
+    {% endif %}
+</div>
 
-</div>
-<br>
-{% else %}
-<h1>No orders found.</h1>
-{% endif %}
-</div>
+
 
 
 

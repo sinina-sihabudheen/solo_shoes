@@ -64,10 +64,10 @@
                                             </figure><!-- End .product-media -->
 
                                             <div class="product-body">
-                                                <div class="product-cat">
-                                                    <a href="#">{{ product.category }}</a>
-                                                </div><!-- End .product-cat -->
-												<h3 class="product-title"><a href="product.html">{{ product.product_name }}</a></h3><!-- End .product-title -->
+												<div class="product-cat">
+													<a href="{% url 'store:shop_category' category=product.category %}">{{ product.category }}</a>
+												</div><!-- End .product-cat -->
+												<h3 class="product-title">{{ product.product_name }}</h3><!-- End .product-title -->
                                                 
 												{% if product.discounted_price is not None %}
 												<div class="product-price">													
@@ -135,7 +135,7 @@
                                                 <div class="product-cat">
                                                     <a href="#">{{ product.category }}</a>
                                                 </div><!-- End .product-cat -->
-												<h3 class="product-title"><a href="product.html">{{ product.product_name }}</a></h3><!-- End .product-title -->
+												<h3 class="product-title">{{ product.product_name }}</h3><!-- End .product-title -->
                                                 
 												{% if product.discounted_price is not None %}
 												<div class="product-price">													
@@ -221,44 +221,36 @@
         						
 
         							<div class="widget widget-collapsible">
-										<h3 class="widget-title">
-											<a data-toggle="collapse" href="#widget-5" role="button" aria-expanded="true" aria-controls="widget-5">
-												Price
-											</a>
+										<h3 class="widget-title">											
+												Price											
 										</h3>
 									
 										<div class="collapse show" id="widget-5">
 											<div class="widget-body">
-												<form method="get" action="{% url 'store:search_by_price' %}">
-													<div class="filter-price">
-														<div class="filter-price-text">
-															Price Range:
-															<span id="filter-price-range"></span>
-														</div>   
-														<div id="price-slider"></div>
+												<form id="price-filter-form">
+													<div class="filter-item">
+														<div class="custom-control custom-checkbox">
+															<input type="checkbox" class="custom-control-input" id="price-range-1" name="price_range" value="100-1000">
+															<label class="custom-control-label" for="price-range-1">100-1000</label>
+														</div>
 													</div>
-													<script>
-														// Initialize the price range slider
-														var priceSlider = document.getElementById('price-slider');
-														var filterPriceRange = document.getElementById('filter-price-range');
-													
-														noUiSlider.create(priceSlider, {
-															start: [100, 3000], // Set default min and max values
-															connect: true,
-															range: {
-																'min': 100,
-																'max': 3000
-															}
-														});
-													
-														// Update the filter price range text when the slider values change
-														priceSlider.noUiSlider.on('update', function (values, handle) {
-															filterPriceRange.innerHTML = '₹' + values[0] + ' - ₹' + values[1];
-														});
-													</script>
-									
-													<button type="submit" class="btn btn-primary">Apply Filter</button>
+													<div class="filter-item">
+														<div class="custom-control custom-checkbox">
+															<input type="checkbox" class="custom-control-input" id="price-range-2" name="price_range" value="1000-2000">
+															<label class="custom-control-label" for="price-range-2">1000-2000</label>
+														</div>
+													</div>
+													<div class="filter-item">
+														<div class="custom-control custom-checkbox">
+															<input type="checkbox" class="custom-control-input" id="price-range-3" name="price_range" value="2000-5000">
+															<label class="custom-control-label" for="price-range-3">2000-5000</label>
+														</div>
+													</div>
+													<button type="button" id="apply-filter-button">Apply Filter</button>
 												</form>
+												
+												
+												
 											</div>
 										</div>
 									</div>
@@ -313,7 +305,7 @@
 					type: 'GET',
 					url: '/store/add_to_wishlist/' + productId + '/',
 					success: function(response) {
-						console.log('Product added to wishlist successfully');
+						
 						  // Display the success message in the modal
 					$('#customModal .modal-body').text(response.message);
 					$('#customModal').modal('show');
@@ -329,6 +321,39 @@
 			});
 		});
 	</script>
+
+<script>
+    $(document).ready(function() {
+    console.log("Script loaded successfully");
+
+    $('#price-filter-form').submit(function(e) {
+        e.preventDefault();  // Prevent the form from submitting in the default way
+
+        var formData = $(this).serialize();
+        console.log("Form Data:", formData);
+
+        // Make an AJAX request to the server
+        $.ajax({
+            type: 'GET',
+            url: '/store/product_list/',  // Update the URL as needed
+            data: formData,
+            success: function(response) {
+                console.log("Received Data:", response);
+                
+                // Update the content on your page with the response, for example:
+                $('#products-container').html(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                console.log('XHR:', xhr);
+                console.log('Status:', status);
+            }
+        });
+    });
+});
+
+</script>
+
 
 </body>
 

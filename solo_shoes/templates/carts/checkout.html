@@ -30,14 +30,7 @@
 							<div class="cart-discount">
 								<form method="post" action="{% url 'carts:apply_coupon' cart.id %}">
 									{% csrf_token %}
-									{% if messages %}
-										<div class="alert alert-{% if messages.tags %}{{ messages.tags }}{% endif %}" role="alert">
-											{% for message in messages %}
-												{{ message }}
-											{% endfor %}
-										</div>
-									{% endif %}
-									{% csrf_token %}
+									
 									<div class="input-group">
 										<input type="text" class="form-control" required placeholder="coupon code" name="coupon">
 										<div class="input-group-append">
@@ -128,7 +121,7 @@
 													
 													
 													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
-														<input class="form-check-input col-3" type="radio" value="cod" id="cod" name="payment" required>
+														<input class="form-check-input col-3" type="radio" value="COD" id="cod" name="payment" required>
 														<label class="col-9  mx-auto mx-5" for="cod">
 															COD
 														</label>
@@ -136,8 +129,8 @@
 											
     												{% if wallet.balance > total %}
 													<div class=" bg-light py-3 d-flex mb-1"   style="border-radius: 7px; border: 1px dashed #e4e4e4;">
-														<input class="form-check-input col-3" type="radio" value="wallet" id="wallet" name="payment" required>
-														<label class="col-9  mx-auto mx-5" for="wallet">
+														<input class="form-check-input col-3" type="radio" value="WAL" id="wal" name="payment" required>
+														<label class="col-9  mx-auto mx-5" for="wal">
 															WALLET
 														</label>
 													</div>
@@ -210,6 +203,18 @@
 	<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<!-- <script src="{% static 'user_auth/assets/js/checkout.js' %}"></script> -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script>
+		{% if messages %}
+			{% for message in messages %}
+				Swal.fire({
+					icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}error{% endif %}",
+					title: "{% if message.tags == 'success' %}Success{% elif message.tags == 'error' %}Error{% endif %}",
+					text: "{{ message }}",
+				});
+			{% endfor %}
+		{% endif %}
+	</script>
 
 	<script>
 		$(document).ready(function (){

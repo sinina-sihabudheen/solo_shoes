@@ -120,11 +120,10 @@ def deleteaddress(request, address_id):
 @login_required
 def myorder(request):
     
-    order = Cart.objects.filter(user=request.user, complete=True).prefetch_related('cartitem_set__product')
-   
+    order = Cart.objects.filter(user=request.user, complete=True).prefetch_related('cartitem_set__product',
+                                                                                   'shipping_address_for_orders')   
 
-    context =   {'order': order, 
-                 
+    context =   {'order': order,                  
                  } 
     return render(request, 'user_profile/orders.html', context)
 
@@ -132,6 +131,7 @@ def myorder(request):
 def view_order(request,cart_id):
  
     order = get_object_or_404(Cart.objects.prefetch_related('cartitem_set__product'), id=cart_id)
+    # order = get_object_or_404(Cart.objects.all(), id=cart_id)
 
     context =   {'order': order,                
                  } 

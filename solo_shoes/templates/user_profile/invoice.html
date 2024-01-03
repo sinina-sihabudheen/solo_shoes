@@ -34,6 +34,10 @@
         .invoice-title {
             font-size: 24px;
             color: #007bff;
+            text-align: center;
+            margin: auto;
+            
+           
         }
 
         .address {
@@ -78,7 +82,7 @@
         <div class="invoice-inner">
             <div class="invoice-info" id="invoice_wrapper">
                 <div class="invoice-header">
-                    <div class="invoice-title">Invoice</div>
+                    <div class="invoice-title" >Invoice</div>
                 </div>
                 <div class="invoice-center">
                     <div class="address">
@@ -86,22 +90,22 @@
                         <p><strong>Invoice Date:</strong> {{ order.date_added }}</p>
                     </div>
                     <div class="address">
-                        <h4>Invoice To</h4>
+                        <h4>Invoice From</h4>
                         <p>
-                            <strong class="text-brand">SOLO Shoes</strong><br>
+                            <strong class="text-brand">SOLO SHOES</strong><br>
                             Shoes Enterprices<br>
                             Kochi,123456, Kerala, India  <br>
-                            <abbr title="Phone">Phone:</abbr> (+91) 9526997010<br>
-                            <abbr title="Email">Email:</abbr> sinna.sihabudheen@gmail.com
+                            <abbr title="Phone">Phone:</abbr> (+91) 9526997019<br>
+                            <abbr title="Email">Email:</abbr> soloshoes@gmail.com
                         </p>
                     </div>
                     <div class="address">
                         <h4>Bill To</h4>
                         <p>
                             <strong class="text-brand">{{ order.user.username }}</strong><br>
-                            {{ order.shipping_address.address_lines }}<br>
-                            {{ order.shipping_address.city }}, {{ order.shipping_address.state }}, {{ order.shipping_address.country }}<br>
-                            <abbr title="Phone">Phone:</abbr> {{ order.shipping_address.mobile }}<br>
+                            {{ order.address_lines }}<br>
+                            {{ order.city }}, {{ order.state }}, {{ order.country }}<br>
+                            <abbr title="Phone">Phone:</abbr> {{ order.mobile }}<br>
                             <abbr title="Email">Email:</abbr> {{ order.user.email }}
                         </p>
                     </div>
@@ -119,8 +123,8 @@
                             <tbody>
                                 {% for order_item in order.cartitem_set.all %}
                                 <tr>
-                                    <td>{{ order_item.product.product_name }}<br></td>
-                                    <td>{{ order_item.product.price }}</td>
+                                    <td>{{ order_item.product_name_at_order }}<br></td>
+                                    <td>{{ order_item.product_price_at_order }}</td>
                                     <td>{{ order_item.quantity }}</td>
                                     <td>{{ order_item.get_total }}</td>
                                 </tr>
@@ -131,10 +135,16 @@
                 </div>
                 <div class="invoice-bottom">
                     <div class="address">
+                        <h6 class="mx-5"> {% if order.coupon %}
+                            Applied Coupon Amount: {{ order.coupon.discount_price}} <br>
+                            {{ order.coupon }}
+                           
+                            {% endif %}
+                        </h6>
                         <h4>Payment Method</h4>
                         <p>{{ order.payment_method }}</p>
                     </div>
-                    <div class="total-amount">Total Amount: {{ order.get_cart_total }}</div>
+                    <div class="total-amount">Total Amount: {{ order.cart_total_at_order }}</div>
                     <div class="note">
                         <strong>Note:</strong> This is a computer-generated receipt and does not require a physical signature.
                     </div>

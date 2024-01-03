@@ -51,7 +51,9 @@ class CartItemForm(forms.ModelForm):
     class Meta:
         model = CartItem
         fields = ['delivery_status']
-
+        widgets = {
+            'delivery_status' : forms.Select(attrs={'class': 'form-control address-input', 'style': 'color: white;'})
+        }
 
 class ProductForm(forms.ModelForm):
     class Meta:

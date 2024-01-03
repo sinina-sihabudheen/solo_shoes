@@ -18,6 +18,8 @@ class ShippingAddress(models.Model):
     country = models.CharField(max_length=255, null=True, blank=True)
     mobile = models.CharField(max_length=15)
     status = models.BooleanField(default=False)
+    is_for_orders = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def _str_(self):
         return self.full_name

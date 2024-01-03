@@ -81,7 +81,7 @@ def dashboard(request):
             all_orders = all_orders.filter(date_added__gte=start_date)
         products = Product.objects.all()
         
-        total_revenue = sum(order.get_cart_total for order in all_orders)
+        total_revenue = sum(order.get_cart_total_at_order for order in all_orders)
         total_sales = sum(order.get_cart_items for order in all_orders)
         total_stock = sum(product.stock for product in products)
                      
@@ -94,9 +94,9 @@ def dashboard(request):
         wallet_count = wallet_orders.count()
 
 
-        cod_total = sum(order.get_cart_total for order in cod_orders)
-        raz_total = sum(order.get_cart_total for order in raz_orders)
-        wallet_total = sum(order.get_cart_total for order in wallet_orders)
+        cod_total = sum(order.get_cart_total_at_order for order in cod_orders)
+        raz_total = sum(order.get_cart_total_at_order for order in raz_orders)
+        wallet_total = sum(order.get_cart_total_at_order for order in wallet_orders)
 
          
         
@@ -340,14 +340,35 @@ def product_management(request):
 @login_required(login_url='custom_admin_panel:adminlogin')
 def order(request):
        
-    orders_with_items = Cart.objects.filter(complete=True).prefetch_related(
-        Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
-    ).all()   
+    # orders_with_items = Cart.objects.filter(complete=True).prefetch_related(
+    #     Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
+    # ).all()   
+
+    # context = {
+    #     'orders_with_items': orders_with_items,
+    # }
+    # return render(request, 'custom_admin_panel/order_list.html', context)
+    orders_with_items = Cart.objects.filter(complete=True).all()
 
     context = {
         'orders_with_items': orders_with_items,
     }
     return render(request, 'custom_admin_panel/order_list.html', context)
+
+def order_details(request, order_item_id):
+    order = get_object_or_404(Cart, id=order_item_id, complete=True)
+    order_items = order.cartitem_set.all()
+    orders_with_items = Cart.objects.filter(complete=True).prefetch_related(
+        Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
+    ).all()  
+
+    context = {
+        'order': order,
+        'order_items': order_items,
+        'orders_with_items': orders_with_items,
+    }
+
+    return render(request, 'custom_admin_panel/order_details.html', context)
 
 def order_edit(request, order_item_id):
     
@@ -490,7 +511,7 @@ def sales_report(request):
     delivered_order_items = CartItem.objects.filter(delivery_status='D')
     print(delivered_order_items)
     most_sold_products = (
-        delivered_order_items.values('product__product_name')
+        delivered_order_items.values('product_price_at_order')
         .annotate(total_sold=Sum('quantity'))
         .order_by('-total_sold')[:6]
     )    
@@ -506,7 +527,7 @@ def get_sales_data(request, period):
         data = (
             order_items.annotate(day=TruncDay('order__date_added'))
             .values('day')
-            .annotate(total=Sum(F('quantity') * F('product__price')))
+            .annotate(total=Sum(F('quantity') * F('product_price_at_order')))
             .order_by('day')
         )
         labels = [item['day'].strftime('%A') for item in data]
@@ -518,7 +539,7 @@ def get_sales_data(request, period):
         data = (
         order_items.annotate(day=TruncDay('order__date_added'))
         .values('day')
-        .annotate(total=Sum(F('quantity') * F('product__price')))
+        .annotate(total=Sum(F('quantity') * F('product_price_at_order')))
         .order_by('day')
     )
         labels = [item['day'].strftime('%Y-%m-%d') for item in data]
@@ -530,7 +551,7 @@ def get_sales_data(request, period):
         data = (
             order_items.annotate(month=TruncMonth('order__date_added'))
             .values('month')
-            .annotate(total=Sum(F('quantity') * F('product__price')))
+            .annotate(total=Sum(F('quantity') * F('product_price_at_order')))
             .order_by('month')
         )
         labels = [f"{item['month'].strftime('%B')}" for item in data]
@@ -543,29 +564,6 @@ def get_sales_data(request, period):
 
     return JsonResponse({'labels': labels, 'data': sales_data})
 
-# @login_required(login_url='custom_admin_panel:adminlogin')
-# def sales_details(request):
-#     if request.method == 'POST':
-#         start_date_str = request.POST.get('startDate')
-#         end_date_str = request.POST.get('endDate')
-       
-#         start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-#         end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-        
-#         order_items = CartItem.objects.filter(order__date_added__range=(start_date, end_date), order__isnull=False)
-     
-#         product_quantities = order_items.values('product__product_name').annotate(total_quantity=Sum('quantity'))  
-
-#         context = {
-#             'order_items': order_items,
-#             'product_quantities': product_quantities,
-#             'start_date':start_date_str,
-#             'end_date':end_date_str,
-
-#         } 
-
-       
-#     return render(request, 'custom_admin_panel/salespdf.html', context)
 
 
 @login_required(login_url='custom_admin_panel:adminlogin')
@@ -587,7 +585,7 @@ def sales_details(request):
             order__isnull=False
         )
      
-        product_quantities = order_items.values('product__product_name').annotate(total_quantity=Sum('quantity'))  
+        product_quantities = order_items.values('product_price_at_order').annotate(total_quantity=Sum('quantity'))  
 
         context = {
             'order_items': order_items,

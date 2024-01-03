@@ -11,7 +11,7 @@
                         <div class="intro-slide">
                             <figure class="slide-image">
                                 <picture>
-                                    <source media="(max-width: 480px)" srcset="assets/images/demos/demo-10/slider/slide-1-480w.jpg">
+                                    <source media="(max-width: 480px)" srcset="user_auth/assets/images/demos/demo-10/slider/slide-1-480w.jpg">
                                     <img src="{% static 'user_auth/assets/images/demos/demo-10/slider/slide-1.jpg' %}" alt="Image Desc">
                                 </picture>
                             </figure><!-- End .slide-image -->
@@ -29,7 +29,7 @@
                         <div class="intro-slide">
                             <figure class="slide-image">
                                 <picture>
-                                    <source media="(max-width: 480px)" srcset="assets/images/demos/demo-10/slider/slide-2-480w.jpg">
+                                    <source media="(max-width: 480px)" srcset="user_auth/assets/images/demos/demo-10/slider/slide-2-480w.jpg">
                                     <img src="{% static 'user_auth/assets/images/demos/demo-10/slider/slide-2.jpg' %}" alt="Image Desc">
                                 </picture>
                             </figure>End .slide-image
@@ -46,7 +46,7 @@
                         <div class="intro-slide">
                             <figure class="slide-image">
                                 <picture>
-                                    <source media="(max-width: 480px)" srcset="assets/images/demos/demo-10/slider/slide-3-480w.jpg">
+                                    <source media="(max-width: 480px)" srcset="user_auth/assets/images/demos/demo-10/slider/slide-3-480w.jpg">
                                     <img src="{% static 'user_auth/assets/images/demos/demo-10/slider/slide-3.jpg' %}" alt="Image Desc">
                                 </picture>
                             </figure>
@@ -229,11 +229,9 @@
 												<span class="product-label label-primary">Offer:{{ i.category.offer.category_offer_name }}</span>
                                         		<span class="product-label label-sale">{{ i.category.offer.discount_percentage|floatformat:.2 }}% off</span>
 										{% endif %}
-                                        <!-- <span class="product-label label-primary">Sale</span> -->
-                                        <!-- <span class="product-label label-sale">30% off</span> -->
-                                        <a href="{% url 'store:product' i.id %}">
-                                            
-                                            <img src="{{ i.productimage_set.first.image.url }}" alt="Product image" class="product-image">
+                                      
+                                        <a href="{% url 'store:product' i.id %}">                                            
+                                            <img src="{{ i.productimage_set.first.image.url }}" alt="Product image" class="product-image" style="width: 300px; height:250px;">
                                         </a>
 
                                         <div class="product-action-vertical">
@@ -267,14 +265,7 @@
                                     </div><!-- End .product-body -->
 
                                     <div class="product-footer">
-                                        <div class="ratings-container">
-                                            <div class="ratings">
-                                                <div class="ratings-val" style="width: 60%;"></div><!-- End .ratings-val -->
-                                            </div><!-- End .ratings -->
-                                            <span class="ratings-text">( 4 Reviews )</span>
-                                        </div><!-- End .rating-container -->
-
-                                        
+                                                                               
                                         <div class="product-action">
                                             {% if user.is_authenticated %}
                                                 {% if product.stock > 0 %}
@@ -319,9 +310,9 @@
 
                     <div class="col-sm-6 col-md-4">
                         <div class="banner banner-cat">
-                            <a href="#">
-                                <img src="{% static 'user_auth/assets/images/demos/demo-10/banners/banner-6.jpg' %}" alt="Banner">
-                            </a>
+                                 <img src="{% static 'user_auth/assets/images/demos/demo-10/banners/banner-6.jpg' %}" alt="Banner">
+                         <a href="#">
+                              </a>
 
                             <div class="banner-content banner-content-overlay text-center">
                                 <h3 class="banner-title font-weight-normal">Men's</h3>
@@ -403,6 +394,66 @@
             });
         });
     </script>
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const searchForm = document.getElementById('searchForm');
+    
+        searchInput.addEventListener('input', function() {
+            const query = searchInput.value.trim();
+    
+            if (query.length === 0) {
+                searchResults.innerHTML = '';
+                return;
+            }
+    
+            fetch(`/search/?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = '';
+                    
+    
+                    if (data.length > 0) {
+                        const resultList = document.createElement('ul');
+    
+                        data.forEach(result => {
+                            const listItem = document.createElement('li');
+                            const link = document.createElement('a');
+    
+                            link.textContent = result.product_name;
+                            link.href = `/store/product/${result.productId}/`; 
+                            console.log('SEARCH SCRIPT WORKING');
+    
+                            listItem.appendChild(link);
+                            resultList.appendChild(listItem);
+                        });
+    
+                        searchResults.appendChild(resultList);
+                    } else {
+                        searchResults.innerHTML = 'No results found.';
+                    }
+                })
+                .catch(error => console.error('Error fetching search results:', error));
+        });
+    
+        // Optional: Close the suggestion dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('#searchResults')) {
+                searchResults.innerHTML = '';
+            }
+        });
+    
+        // Optional: Prevent form submission when clicking on a suggestion
+        searchResults.addEventListener('click', function(event) {
+            if (event.target.tagName === 'A') {
+                event.preventDefault();
+                searchForm.submit();
+            }
+        });
+    </script>
+    
+
+
 
 </body>
 
