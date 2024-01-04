@@ -420,7 +420,7 @@ def razorpaycheck(request):
     except Cart.DoesNotExist:
         return JsonResponse({'total_price': 0, 'error': 'Cart not found'})
 
-
+@transaction.atomic
 def place_order_raz(request):
     if request.method == 'POST':
         selected_address_id = request.POST.get('selectedAddressId')
