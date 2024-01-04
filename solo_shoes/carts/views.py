@@ -406,6 +406,7 @@ def add_address(request):
 
     return render(request, 'carts/add_address.html', {'address_form': address_form})
 
+@transaction.atomic
 def razorpaycheck(request):
     try:
         cart = Cart.objects.get(user=request.user, complete=False)
