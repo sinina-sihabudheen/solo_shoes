@@ -6,7 +6,8 @@
             <div class="col-12 grid-margin">
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="card-title">Order Items in {{ order.id }}</h4>  
+                        <h4 class="card-title">Order Items in {{ order.id }} </h4><h6><br> Date: {{ order.date_added|date:"D, d F" }}<br>
+                            Payment Method: {{ order.payment_method }} </h6>
                         <hr class="white-line my-4">
                         
                         <div class="table-responsive">
@@ -15,12 +16,11 @@
                                     <tr>
                                         
                                         <th>Product Name</th>
-                                        <th>Product Price</th>
-                                        <th>Date Added</th>
-                                        <th>Payment Method</th>
-                                        <th>Order Status</th>
+                                        <th>Product Price</th>                                      
+                                        <th>Applied Offer</th>
                                         <th>Quantity</th>
-                                        
+                                        <th>Total Amount</th>
+                                        <th>Order Status</th>                                      
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -29,12 +29,28 @@
                                         <tr>
                                            
                                             <td>{{ order_item.product_name_at_order }}</td>
-                                            <td>{{ order_item.product_price_at_order }}</td>
-                                           
-                                            <td>{{ order_item.order.date_added }}</td>
-                                            <td>{{ order.payment_method }}</td>
-                                            <td>{{ order_item.get_delivery_status_display }}</td>
+                                            <td>{{ order_item.product_price_at_order }}</td>                                          
+                                            <td>{% if order_item.product.offer and order_item.product.category.offer %}
+                                                {% with product_offer=order_item.product.offer.discount_percentage %}
+                                                    {% with category_offer=order_item.product.category.offer.discount_percentage %}
+                                                        {% if product_offer > category_offer %}
+                                                            {{ product_offer|floatformat:.2 }}% off
+                                                        {% else %}
+                                                            {{ category_offer|floatformat:.2 }}% off
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endwith %}
+                                            {% elif order_item.product.offer %}
+                                                {{ order_item.product.offer.discount_percentage|floatformat:.2 }}% off
+                                            {% elif order_item.product.category.offer %}
+                                                {{ order_item.product.category.offer.discount_percentage|floatformat:.2 }}% off
+                                            {% else %}
+                                                None
+                                            {% endif %}
+                                            </td>
                                             <td>{{ order_item.quantity }}</td>
+                                            <td>{{ order_item.get_total }}</td>                                            
+                                            <td>{{ order_item.get_delivery_status_display }}</td>                                           
                                             
                                             {% if order_item.delivery_status != 'CN' %}
                                                 <td>

@@ -23,11 +23,15 @@ class CouponForm(forms.ModelForm):
         cleaned_data = super().clean()
         valid_from = cleaned_data.get('valid_from')
         valid_till = cleaned_data.get('valid_till')
+        minimum_amount = cleaned_data.get('minimum_amount')
 
         # Check if end date is greater than start date
         if valid_from and valid_till and valid_from >= valid_till:
             raise forms.ValidationError("End date must be greater than the start date.")
 
+        # Check if minimum_amount is negative
+        if minimum_amount is not None and minimum_amount < 0:
+            raise forms.ValidationError("Minimum amount should not be negative.")
 
         return cleaned_data
     
@@ -69,6 +73,28 @@ class ProductForm(forms.ModelForm):
 
             
         }
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+        if price is not None and price < 0:
+            raise forms.ValidationError("Price should not be negative.")
+        return price
+
+    def clean_stock(self):
+        stock = self.cleaned_data.get('stock')
+        if stock is not None and stock < 0:
+            raise forms.ValidationError("Stock should not be negative.")
+        return stock
+    
+    def clean_product_name(self):
+        product_name = self.cleaned_data.get('product_name')
+        is_editing = self.instance and self.instance.pk is not None  # Check if in edit mode
+
+        if not is_editing and Product.objects.filter(product_name=product_name).exists():
+            raise forms.ValidationError("Product with this name already exists.")
+
+        return product_name
+
+
 
 
 class ProductImageForm(forms.ModelForm):
@@ -116,6 +142,12 @@ class OfferCategoryForm(forms.ModelForm):
             'date_start': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'date_end': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         }
+
+    def clean_discount_percentage(self):
+        discount_percentage = self.cleaned_data.get('discount_percentage')
+        if discount_percentage is not None and discount_percentage < 0:
+            raise forms.ValidationError("Discount percentage should not be negative.")
+        return discount_percentage
     
     def clean(self):
         cleaned_data = super().clean()
@@ -125,10 +157,6 @@ class OfferCategoryForm(forms.ModelForm):
         # Check if end date is greater than start date
         if date_start and date_end and date_start >= date_end:
             raise forms.ValidationError("End date must be greater than the start date.")
-
-        # # Check if start date is in the past
-        # if date_start and date_start < timezone.now():
-        #     raise forms.ValidationError("Start date cannot be in the past.")
 
         return cleaned_data
 

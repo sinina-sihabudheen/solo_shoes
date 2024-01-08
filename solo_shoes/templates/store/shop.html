@@ -92,13 +92,23 @@
                                         <div class="product product-7 text-center">
                                             <figure class="product-media">
 												{% if product.offer %}
-												<span class="product-label label-primary">{{ product.offer.offer_name }}</span>
-                                        		<span class="product-label label-sale">{{ product.offer.discount_percentage|floatformat:.2 }}% off</span>
+													{% if product.category.offer %}
+														{% if product.offer.discount_percentage > product.category.offer.discount_percentage %}
+															<span class="product-label label-primary">Offer: {{ product.offer.offer_name }}</span>
+															<span class="product-label label-sale">{{ product.offer.discount_percentage|floatformat:.2 }}% off</span>
+														{% else %}
+															<span class="product-label label-primary">Offer: {{ product.category.offer.category_offer_name }}</span>
+															<span class="product-label label-sale">{{ product.category.offer.discount_percentage|floatformat:.2 }}% off</span>
+														{% endif %}
+													{% else %}
+														<span class="product-label label-primary">Offer: {{ product.offer.offer_name }}</span>
+														<span class="product-label label-sale">{{ product.offer.discount_percentage|floatformat:.2 }}% off</span>
+													{% endif %}
+												{% elif product.category.offer %}
+													<span class="product-label label-primary">Offer: {{ product.category.offer.category_offer_name }}</span>
+													<span class="product-label label-sale">{{ product.category.offer.discount_percentage|floatformat:.2 }}% off</span>
 												{% endif %}
-												{% if product.category.offer %}
-												<span class="product-label label-primary">{{ product.category.offer.category_offer_name }}</span>
-                                        		<span class="product-label label-sale">{{ product.category.offer.discount_percentage|floatformat:.2 }}% off</span>
-												{% endif %}
+
                                                 <!-- <span class="product-label label-new">New</span> -->
                                                 <a href="{% url 'store:product' product.id %}">
                                                     <img src="{{ product.productimage_set.first.image.url }}" alt="Product image" class="product-image" style="width: 300px; height:250px;">

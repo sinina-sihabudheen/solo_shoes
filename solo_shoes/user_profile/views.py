@@ -3,12 +3,13 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import F
 from carts.models import Cart, CartItem
 from .forms import CustomPasswordChangeForm, CustomUserDetailsForm, AddressForm
 from django.contrib.auth import update_session_auth_hash
 from .models import ShippingAddress, Wallet
 from .helpers import render_to_pdf
+from django.utils import timezone
 
 
 
@@ -127,13 +128,22 @@ def myorder(request):
                  } 
     return render(request, 'user_profile/orders.html', context)
 
+from datetime import datetime, timedelta
 @login_required
 def view_order(request,cart_id):
  
     order = get_object_or_404(Cart.objects.prefetch_related('cartitem_set__product'), id=cart_id)
-    # order = get_object_or_404(Cart.objects.all(), id=cart_id)
+    # order = get_object_or_404(Cart.objects.all(), id=cart_id) 
+    for cart_item in order.cartitem_set.all():
+        cart_item.actual_subtotal = cart_item.product_price_at_order * cart_item.quantity
 
-    context =   {'order': order,                
+
+       
+    expected_delivery_date = order.date_added + timedelta(days=4)
+
+    context =   {'order': order, 
+                 'expected_delivery_date': expected_delivery_date, 
+                         
                  } 
     return render(request, 'user_profile/vieworder.html', context)
 
@@ -145,26 +155,59 @@ def cancel_order(request, cart_id):
     if cart_item:      
 
         cart_item.delivery_status = 'CN'
+        cart_item.product.stock = F('stock') + cart_item.quantity
+        cart_item.product.save()
 
         cart_item.save()
         messages.success(request, 'Your order is successfully cancelled.')
         if cart_item.order.payment_method == "RAZ" or cart_item.order.payment_method == "WAL":
 
-            refund_amount = cart_item.get_total
-            print(refund_amount)
+            refund_amount = cart_item.get_total         
     
             user_wallet = Wallet.objects.get(user=request.user)
             user_wallet.balance += refund_amount
-            user_wallet.save()
-            print(user_wallet.balance)
-        
-       
-     
+            user_wallet.save()       
     else:
 
         messages.error(request, 'Invalid order or you are not authorized to cancel this order.')
 
-    return redirect('user_profile:myorder')
+    if cart_item.order:
+        return redirect('user_profile:view_order', cart_id=cart_item.order.id)
+    else:
+        # Redirect to some other view if there is no associated order
+        return redirect('user_profile:your_default_view')
+
+@login_required
+def return_order(request, cart_id):
+    cart_item = get_object_or_404(CartItem, id=cart_id)
+
+    if cart_item and cart_item.order.date_added + timedelta(days=7) >= timezone.now():
+        if cart_item.delivery_status == 'D':
+            # Check if the order item has been delivered before allowing returns
+            cart_item.delivery_status = 'RT'
+            cart_item.product.stock = F('stock') + cart_item.quantity
+            cart_item.product.save()
+
+            cart_item.save()
+            messages.success(request, 'Your order item is successfully returned.')
+
+            # Adjust the wallet balance if payment method is RAZ or WAL
+            # if cart_item.order.payment_method == "RAZ" or cart_item.order.payment_method == "WAL" or cart_item.order.payment_method == "COD":
+            #     refund_amount = cart_item.get_total_at_order
+            #     user_wallet = Wallet.objects.get(user=request.user)
+            #     user_wallet.balance += refund_amount
+            #     user_wallet.save()
+            refund_amount = cart_item.get_total_at_order
+            user_wallet = Wallet.objects.get(user=request.user)
+            user_wallet.balance += refund_amount
+            user_wallet.save()
+
+        else:
+            messages.error(request, 'Cannot return the order item as it has not been delivered yet.')
+    else:
+        messages.error(request, 'Invalid order item or the return period has expired.')
+
+    return redirect('user_profile:view_order', cart_id=cart_item.order.id)
 
 @login_required
 def generate_invoice(request, cart_id):

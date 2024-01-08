@@ -5,73 +5,67 @@
 <div class="main-panel">
     <div class="content-wrapper">
         <div class="row"></div>
-        <div class="row">
-
-        </div>
+        <div class="row"></div>
 
     <h2 class="text-center text-light">Sales Analysis Report</h2>
 
-    <div class="row mt-4">
-        <div class="col-lg-6 grid-margin stretch-card">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">Sales Portfolio</h4>
-                    <canvas id="areaChart" style="height: 250px;"></canvas>
-                    <div class="col-10 mt-3">
-                        <button onclick="SalesPortfolio('week')" class="btn btn-sm btn-outline-info">This week</button>
-                        <button onclick="SalesPortfolio('month')" class="btn btn-sm btn-outline-info">This month</button>
-                        <button onclick="SalesPortfolio('year')" class="btn btn-sm btn-outline-info">This year</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6 grid-margin stretch-card">
-            <div class="card">
-              
-                <div class="card-body">
-                    <h4 class="card-title">Most sold products</h4>
-                    <canvas id="barChart" style="height:230px"></canvas>
-                    <div style="display: none;">
-                        {% for product in most_sold_products %}
-                            <input class="product" value="{{ product.product__product_name }}">
-                            <input class="count" value="{{ product.total_sold }}">
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- <div class="row mt-4">
-        <form action="{% url 'custom_admin_panel:sales_details' %}", method="post">
-            {% csrf_token %}
-        <div class="col-12 text-center">
-            <button  class="btn btn-outline-info">Sales Report</button>
-        </div>
-    </form>
-    </div> -->
-   
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Username</th>
+                    <th>Date Ordered</th>
+                    <th>Payment Method</th>
+                    <th>Order Status</th>
+                    <th>Total Quantity</th>
+                    <th>Total Amount</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders_with_items %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.user.username }}</td>
+                        <td>{{ order.date_added|date:"D, d F" }}</td>
+                        <td>{{ order.payment_method }}</td>
+                        <td>
+                            {% for order_item in order.cartitem_set.all %}
+                                {% if forloop.first %}
+                                    {{ order_item.get_delivery_status_display }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ order.get_cart_items }}</td>
+                        <td>{{ order.cart_total_at_order }}</td>
+                        
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>  
     <div class="card">
         <div class="card-body pb-3 ms-2">
-          <h5 class="card-title">Sales Report </h5>
-          <form action="{% url 'custom_admin_panel:sales_details' %}" method="post">
-            {%csrf_token%}
-            <div class="form-outline mb-2">
-              <label class="form-label" for="form3Example3">From</label>
-              &nbsp;:&nbsp;
-              <input type="date" id="startDate" name="startDate" required/>
-             </div>
-
-             <div class="form-outline mb-2">
-              <label class="form-label" for="form3Example3">To</label>
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;
-              <input type="date" id="endDate" name="endDate" required/>
-             </div>
-             <button type="submit" class="btn btn-primary">Apply for Details</button>
-          </form>  
-      </div>
-</div>
+            <h5 class="card-title">Sales Report </h5>
+            <form action="{% url 'custom_admin_panel:sales_details' %}" method="post">
+                {% csrf_token %}
+                <div class="form-outline mb-2">
+                    <label class="form-label" for="form3Example3">From</label>
+                    &nbsp;:&nbsp;
+                    <input type="date" id="startDate" name="start_date" required/>
+                </div>
+    
+                <div class="form-outline mb-2">
+                    <label class="form-label" for="form3Example3">To</label>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;
+                    <input type="date" id="endDate" name="end_date" required/>
+                </div>
+                <button type="submit" class="btn btn-primary btn btn-inverse-info">Apply for Details</button>
+            </form>
+        </div>
+    </div>
+</div>    
 </div>
 
     <!-- Additional content as needed -->
@@ -101,99 +95,6 @@
 <!-- Custom js for this page -->
 <script src="{% static 'adminside/assets/js/dashboard.js' %}"></script>
 <!-- End custom js for this page -->
-<script>
 
-    var ctx = document.getElementById('areaChart').getContext('2d');
-    var areaChart;
-    
-    function SalesPortfolio(period) {
-        console.log('Initialized')
-        console.log(period)
-        fetch(`/adminpanel/get_sales_data/${period}/`)
-        .then(response => {
-           
-            return response.json();
-        })
-            .then(data => {
-                // Update the chart
-                updateChart(data.labels, data.data);
-            })
-            .catch(error => console.error('Error fetching sales data:', error));
-    }
-    
-    function updateChart(labels, data) {
-        if (typeof areaChart === 'undefined') {
-            // Create a new chart if it doesn't exist
-            areaChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Sales',
-                        data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                        
-                    
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        } else {
-            // If the chart exists, update the data
-            areaChart.data.labels = labels;
-            areaChart.data.datasets[0].data = data;
-            areaChart.update();
-        }
-    }
-    
-   
-    SalesPortfolio('week');
-   
-    
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var products = document.querySelectorAll('.product');
-        var counts = document.querySelectorAll('.count');
-
-        var productsArray = Array.from(products).map(function (product) {
-            return product.value;
-        });
-
-        var countsArray = Array.from(counts).map(function (count) {
-            return parseInt(count.value);
-        });
-
-        var ctx = document.getElementById('barChart').getContext('2d');
-        var barChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: productsArray,
-                datasets: [{
-                    label: 'Most Sold Products',
-                    data: countsArray,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    });
-</script>
 </body>
 </html>

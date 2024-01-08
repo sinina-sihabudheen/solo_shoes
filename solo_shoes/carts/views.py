@@ -13,6 +13,7 @@ from django.db import transaction
 from decimal import Decimal
 from .models import Cart, CartItem, Coupon
 from django.utils import timezone
+from django.db.models import F
 
 
 
@@ -60,7 +61,7 @@ def add_cart(request, product_id):
             # If the product is not in the cart, create a new CartItem
             cart_item = CartItem.objects.create(order=cart, product=product, quantity=1)
             
-            product.stock -= 1
+            # product.stock -= 1
             product.save()
 
         try:
@@ -98,7 +99,7 @@ def remove_cart_item(request, product_id):
                     # Choose to delete all items or just one (use [0] for one)
                     cart_items.delete()
 
-                    product.stock += 1
+                    # product.stock += 1
                     product.save()
 
                     messages.success(request, f"{product.product_name} removed from the cart.")
@@ -114,6 +115,7 @@ def update_cart(request):
         product_id = request.POST.get('product_id')
         action = request.POST.get('action')
         product = get_object_or_404(Product, id=product_id)
+        print("Updation is working..")
         
         # Use filter to get a queryset and first() to retrieve the first object
         carts = Cart.objects.filter(user=request.user, complete=False)
@@ -126,15 +128,13 @@ def update_cart(request):
         cart_item, created = CartItem.objects.get_or_create(order=cart, product__id=product_id)
         
         if not created:
-            if action == 'increment':
+            if action == 'increment' and cart_item.quantity<product.stock:
                 if product.stock > 0:
                     cart_item.quantity += 1
-                    product.stock -= 1
-                    product.save()
-            elif action == 'decrement':
+                    
+            elif action == 'decrement' and cart_item.quantity!=1:
                 cart_item.quantity -= 1
-                product.stock += 1
-                product.save()
+                
 
                 if cart_item.quantity <= 0:
                     cart_item.delete()
@@ -142,11 +142,15 @@ def update_cart(request):
             cart_item.save()
             messages.success(request, 'Cart updated successfully.')
 
-    return redirect('carts:carts')
+    # return redirect('carts:carts')
+    messages.success(request, 'Cart updated successfully.')
+
+    return JsonResponse({'message': 'Cart updated successfully.', 'updated_quantity': cart_item.quantity, 'total': cart.get_cart_total})
 
 
 def carts(request, total=0, quantity=0):
     try:
+        deduct_price_total = Decimal(0)
         if request.user.is_authenticated:
             carts = Cart.objects.filter(user=request.user, complete=False)
             if carts.exists():
@@ -170,9 +174,14 @@ def carts(request, total=0, quantity=0):
                     if discount_percentage > 0:
                         discount_factor = Decimal(discount_percentage) / Decimal(100)
                         cart_item.discounted_price = cart_item.product.price - (cart_item.product.price * discount_factor)
+                        cart_item.deduct_price = cart_item.product.price * discount_factor*cart_item.quantity
+                        deduct_price_total = (deduct_price_total+cart_item.deduct_price)
+
                     else:
                         cart_item.discounted_price = None
+                        cart_item.deduct_price = Decimal(0)
 
+                    
                     # Store the product name at the time of order placement
                     cart_item.product_name_at_order = cart_item.product.product_name
                     cart_item.save()
@@ -180,8 +189,14 @@ def carts(request, total=0, quantity=0):
                     # Update total and quantity
                     if cart_item.discounted_price is not None:
                         total += cart_item.discounted_price * cart_item.quantity
+                        actual_total = total + deduct_price_total
+                        
+                        
                     else:
                         total += cart_item.product.price * cart_item.quantity
+                        actual_total = total + deduct_price_total
+                        
+                        
                     
                     quantity += cart_item.quantity
             else:
@@ -195,6 +210,8 @@ def carts(request, total=0, quantity=0):
         'quantity': quantity,
         'cart_items': cart_items,
         'cart': cart if 'cart' in locals() else None,
+        'deduct_price_total' : deduct_price_total,
+        'actual_total' : actual_total,
     }
 
     return render(request, 'carts/cart.html', context)
@@ -214,7 +231,7 @@ def checkout(request):
             total = 0
             quantity = 0
             for cart_item in cart_items:
-                total += (cart_item.product.price * cart_item.quantity)
+                total += ((cart_item.product.price * cart_item.quantity) - cart_item.get_total)
                 quantity += cart_item.quantity
 
            
@@ -282,7 +299,7 @@ def apply_coupon(request, cart_id):
     quantity = 0
             
     for cart_item in cart_items:
-        total += (cart_item.product.price * cart_item.quantity)
+        total += ((cart_item.product.price * cart_item.quantity) - cart_item.get_total)
         quantity += cart_item.quantity
 
     user_addresses = ShippingAddress.objects.filter(user=request.user)
@@ -307,6 +324,7 @@ def remove_coupon(request,cart_id):
     cart.save()
     messages.success(request,'Coupon Removed')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 def place_order(request):
     if request.user.is_authenticated:
@@ -347,7 +365,6 @@ def place_order(request):
                 cart.cart_total_at_order = cart.get_cart_total
                                
                 cart.payment_method = selected_payment_method
-                print(cart.payment_method)
                 cart.save()
                 if cart.coupon:
                     cart.coupon = cart.coupon
@@ -373,6 +390,8 @@ def place_order(request):
                     cart_item.product_description_at_order = cart_item.product.description
                     cart_item.product_price_at_order = cart_item.product.price
                     cart_item.product_stock_at_order = cart_item.product.stock
+                    cart_item.product.stock = F('stock') - cart_item.quantity
+                    cart_item.product.save()
                     
                     cart_item.save()
                 
@@ -382,6 +401,7 @@ def place_order(request):
                 cart.save()
 
             messages.success(request, 'Your order has been placed successfully!')
+            
             return redirect('carts:order_placed')
 
     return redirect('carts:checkout')
@@ -461,6 +481,8 @@ def place_order_raz(request):
             cart_item.product_description_at_order = cart_item.product.description
             cart_item.product_price_at_order = cart_item.product.price
             cart_item.product_stock_at_order = cart_item.product.stock
+            cart_item.product.stock = F('stock') - cart_item.quantity
+            cart_item.product.save()
             cart_item.save()
         
         if order.coupon:

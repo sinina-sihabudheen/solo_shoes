@@ -52,9 +52,14 @@
                                                         No Users
                                                     {% endif %}
                                                 </td>
+                                                <td>
+                                                    <a href="{% url 'custom_admin_panel:edit_coupon' coupon.id %}" class="btn btn-inverse-info">
+                                                    EDIT
+                                                    </a>
+                                                </td>
                                                 
                                                 <td>
-                                                    <a href="{% url 'custom_admin_panel:toggle_coupon_status' coupon.id %}" class="badge {% if coupon.status %}badge-danger{% else %}badge-success{% endif %}">
+                                                    <a href="{% url 'custom_admin_panel:toggle_coupon_status' coupon.id %}" class="badge {% if coupon.status %}badge-success{% else %}badge-danger{% endif %}">
                                                         {% if coupon.status %}Unblock{% else %}Block{% endif %}
                                                     </a>
                                                 </td>

@@ -1,257 +1,320 @@
 {% load static %}
 
-        <!-- header -->
-        {% include 'user_authentication/inc/navbar.html' %}
-        <!-- end-header -->
-		
+<!-- header -->
+{% include 'user_authentication/inc/navbar.html' %}
+<!-- end-header -->
 
-        <main class="main">
-        	<div class="page-header text-center" style="background-image: url('assets/images/page-header-bg.jpg')">
-        		<div class="container">
-        			<h1 class="page-title">Shopping Cart<span>Shop</span></h1>
-        		</div><!-- End .container -->
-        	</div><!-- End .page-header -->
-            <nav aria-label="breadcrumb" class="breadcrumb-nav">
-                <div class="container">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Shop</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
-                    </ol>
-                </div><!-- End .container -->
-            </nav><!-- End .breadcrumb-nav -->
 
-            <div class="page-content">
-            	<div class="cart">
-	                <div class="container">
-	                	<div class="row">
-	                		<div class="col-lg-9">
-	                			<table class="table table-cart table-mobile">
-									<thead>
-										<tr>
-											<th>Product</th>
-											<th>Price</th>
-											<th>Quantity</th>
-											<th>Total</th>
-											<th></th>
-										</tr>
-									</thead>
+<main class="main">
+	<div class="page-header text-center" style="background-image: url('assets/images/page-header-bg.jpg')">
+		<div class="container">
+			<h1 class="page-title">Shopping Cart<span>Shop</span></h1>
+		</div><!-- End .container -->
+	</div><!-- End .page-header -->
+	<nav aria-label="breadcrumb" class="breadcrumb-nav">
+		<div class="container">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="{% url 'user_authentication:home' %}">Home</a></li>
+				<li class="breadcrumb-item"><a href="{% url 'store:shop' %}">Shop</a></li>
+				<li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+			</ol>
+		</div><!-- End .container -->
+	</nav><!-- End .breadcrumb-nav -->
 
-									<tbody>
-										{% for cart_item in cart_items %}
-										<tr>
-											<td class="product-col">
-												<div class="product">
-													<figure class="product-media">
-														<a href="#">
-															<img src="{{ cart_item.product.productimage_set.first.image.url }}" alt="{{ cart_item.product.product_name }}">
-														</a>
-													</figure>
-						
-													<h3 class="product-title">
-														<a href="#">{{ cart_item.product.product_name }}</a>
-													</h3><!-- End .product-title -->
-												</div><!-- End .product -->
-											</td>
-											<!-- <td class="price-col">{{ '₹ ' }}{{ cart_item.product.price }}</td> -->
-											<td class="price-col">
-												{% if cart_item.offer.active %}
-													{{ '₹ ' }}{{ cart_item.discounted_price|floatformat:2 }}
-												{% elif cart_item.product.category.offer.active %}
-													{{ '₹ ' }}{{ cart_item.discounted_price|floatformat:2 }}
-												{% else %}
-													{{ '₹ ' }}{{ cart_item.product.price|floatformat:2 }}
-												{% endif %}
-											</td>
-											<td class="quantity-col">
-												<form action="{% url 'carts:update_cart' %}" method="post">
-													{% csrf_token %}
-													<input type="hidden" name="product_id" value="{{ cart_item.product.id }}">
-													<div style="position: relative; display: flex; align-items: center; justify-content: center; border-radius: 7px;  border: .5px dashed #d6d4d4" >
-														<div class="input-group-prepend ">
-														<button value="decrement" name="action" style="min-width: 26px" class="btn btn-decrement btn-spinner mx-3 update-cart-minus-btn" type="submit">
-															<i class="icon-minus"></i>
-														</button></div>
-														<!-- <input type="number"  class="form-control" name="quantity" value="{{ cart_item.quantity }}" min="1" max="10" step="1" data-decimals="0" required> -->
-														<!-- <input  value="{{ cart_item.quantity }}" class="form-control" name="quantity"  required> -->
-														<input type="text" style="text-align: center ; width: 30px; border:none; background: #ffffff;" name="quantity" value="{{ cart_item.quantity }}"  required>
-														<div class="input-group-prepend ">
-														<button value="increment" name="action" style="min-width: 26px" class="btn btn-increment btn-spinner mx-3 update-cart-plus-btn" type="submit">
-															<i class="icon-plus"></i>
-														</button></div>
-													</div>
-												</form>
-											</td>
-											
-											<td class="total-col text-center">
-												
-												
-													{{ '₹ ' }}{{ cart_item.get_total|floatformat:2 }}
+	<div class="page-content">
+		<div class="cart">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-9">
+						<table class="table table-cart table-mobile">
+							<thead>
+								<tr>
+									<th><b>Product</b></th>
+									<th><b>Saved Amount/Unit<br>(Offer Added)</th>
+									<th><b>Actual Price/Unit</b></th>
+									<th><b>Offer Price/Unit</b></th>
+									<th><b>Quantity</b></th>
+									<th><b>Total</b></th>
+									
+								</tr>
+							</thead>
 
-											</td>
-											
-											<!-- <td class="total-col text-center">{{ '₹ ' }}{{ cart_item.get_total }}</td> -->
-											<td class="remove-col"><form action="{% url 'carts:remove_cart_item' cart_item.product.id %}" method="post">
-												{% csrf_token %}
-												<button type="submit" class="btn-remove"><i class="icon-close"></i></button>
-											</form></td>
-											
-        									
-										</tr>
-									{% endfor %}
+							<tbody>
+								{% for cart_item in cart_items %}
+								<tr>
+									<td class="product-col">
+										<div class="product">
+											<figure class="product-media">
+												<a href="#">
+													<img src="{{ cart_item.product.productimage_set.first.image.url }}"
+														alt="{{ cart_item.product.product_name }}">
+												</a>
+											</figure>
+
+											<h3 class="product-title">
+												<a href="#">{{ cart_item.product.product_name }}</a>
+											</h3><!-- End .product-title -->
+										</div><!-- End .product -->
+									</td>
+									<!-- <td class="price-col">{{ '₹ ' }}{{ cart_item.product.price }}</td> -->
+									<td class="price-col">
+										{% if cart_item.product.offer and cart_item.product.category.offer %}
+											{% with product_offer=cart_item.product.offer.discount_percentage %}
+												{% with category_offer=cart_item.product.category.offer.discount_percentage %}
+													{% if product_offer > category_offer %}
+														{{ '₹ ' }}{{ cart_item.deduct_price|floatformat:2}}<br>
+														({{ product_offer|floatformat:.2 }}% off)
+													{% else %}
+														{{ '₹ ' }}{{ cart_item.deduct_price|floatformat:2}}<br>
+														({{ category_offer|floatformat:.2 }}% off)
+													{% endif %}
+												{% endwith %}
+											{% endwith %}
+										{% elif cart_item.product.offer %}
+											{{ '₹ ' }}{{ cart_item.deduct_price|floatformat:2}}<br>
+											({{ cart_item.product.offer.discount_percentage|floatformat:.2 }}% off)
+										{% elif cart_item.product.category.offer %}
+											{{ '₹ ' }}{{ cart_item.deduct_price|floatformat:2}}<br>
+											({{ cart_item.product.category.offer.discount_percentage|floatformat:.2 }}% off)
+										{% else %}
+											None
+										{% endif %}
+									</td>
+									<td class="price-col">
+										
+										{{ '₹ ' }}{{ cart_item.product.price|floatformat:2}}
+									</td>
+									<td class="price-col">
+										
+										{% if cart_item.discounted_price %}
+										{{ '₹ ' }}{{ cart_item.discounted_price|floatformat:2 }}
+										{% else %}
+										{{ '₹ ' }}{{ cart_item.product.price|floatformat:2 }}
+										{% endif %}
+
+
+									</td>
+									<td class="quantity-col">
+										<div
+											style="position: relative; display: flex; align-items: center; justify-content: center; border-radius: 7px;  border: .5px dashed #d6d4d4">
+											<div class="input-group-prepend ">
+												<button
+													onclick="cartManage('{{ cart_item.product.id }}', 'decrement', '{{ cart_item.quantity }}', '{% if cart_item.discounted_price %}{{ cart_item.discounted_price|floatformat:2 }}{% else %}{{ cart_item.product.price|floatformat:2 }}{% endif %}')"
+													value="decrement" name="action" style="min-width: 26px"
+													class="btn btn-decrement btn-spinner mx-3 update-cart-minus-btn"
+													type="submit">
+													<i class="icon-minus"></i>
+												</button>
+											</div>
+
+											<input id="Q{{ cart_item.product.id }}" type="text"
+												style="text-align: center ; width: 30px; border:none; background: #ffffff;"
+												name="quantity" value="{{ cart_item.quantity }}" required>
+
+											<div class="input-group-prepend ">
+												<button
+													onclick="cartManage('{{ cart_item.product.id }}','increment','{{ cart_item.quantity }}','{% if cart_item.discounted_price %}{{ cart_item.discounted_price|floatformat:2 }}{% else %}{{ cart_item.product.price|floatformat:2 }}{% endif %}')"
+													value="increment" name="action" style="min-width: 26px"
+													class="btn btn-increment btn-spinner mx-3 update-cart-plus-btn"
+													type="submit">
+													<i class="icon-plus"></i>
+												</button>
+											</div>
+										</div>
+									</td>
+
+									<td id="T{{ cart_item.product.id }}" class="total-col text-center">
+
+										{{ '₹ ' }}{{ cart_item.get_total|floatformat:2 }}
+
+									</td>
+
+									<!-- <td class="total-col text-center">{{ '₹ ' }}{{ cart_item.get_total }}</td> -->
+									<td class="remove-col">
+										<form action="{% url 'carts:remove_cart_item' cart_item.product.id %}"
+											method="post">
+											{% csrf_token %}
+											<button type="submit" class="btn-remove"><i class="icon-close"></i></button>
+										</form>
+									</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table><!-- End .table table-wishlist -->
+
+					</div><!-- End .col-lg-9 -->
+					<aside class="col-lg-3">
+						<div class="summary summary-cart">
+							<h3 class="summary-title">Cart Total</h3><!-- End .summary-title -->
+
+							<table class="table table-summary">
+								<tbody>
+									<tr class="summary-subtotal">
+										<td>Subtotal:</td>
+										<td id="subtotal">
+											₹ {{ actual_total }}
+										</td>
+									</tr>
+									<!-- End .summary-subtotal -->
+
+									<tr class="summary-shipping">
+										<td>Shipping:</td>
+										<td>&nbsp;</td>
+									</tr>
+
+									<tr class="summary-shipping-row">
+										<td>
+											<div class="custom-control custom-radio">
+												<input type="radio" id="free-shipping" name="shipping"
+													class="custom-control-input" checked>
+												<label class="custom-control-label" for="free-shipping">Free
+													Shipping</label>
+											</div>
+										</td>
+										<td id="shipping-cost">{{ '₹ ' }}0.00</td>
+									</tr>
+									<tr>
+										<td>Saved amount by offer:</td>
+										<td>
+											₹ {{ deduct_price_total }}
+										</td>
+									</tr><!-- End .summary-subtotal -->
+
+									<tr class="summary-total">
+										<td>Total:</td>
+										<td id="grand-total">{{ '₹ ' }}{{ total }}</td>
+									</tr><!-- End .summary-total -->
 								</tbody>
-							</table><!-- End .table table-wishlist -->
-						
-							
-						</div><!-- End .col-lg-9 -->
-	                		<aside class="col-lg-3">
-	                			<div class="summary summary-cart">
-	                				<h3 class="summary-title">Cart Total</h3><!-- End .summary-title -->
+							</table><!-- End .table table-summary -->
 
-	                				<table class="table table-summary">
-	                					<tbody>
-	                						<tr class="summary-subtotal">
-												<td>Subtotal:</td>
-												<td id="subtotal">
+							<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+							<a href="{% url 'carts:checkout' %}"
+								class="btn btn-outline-primary-2 btn-order btn-block">PROCEED TO CHECKOUT</a>
+						</div><!-- End .summary -->
 
-													₹ {{ cart.get_cart_total }}
-													
+						<a href="{% url 'store:shop' %}" class="btn btn-outline-dark-2 btn-block mb-3"><span>CONTINUE
+								SHOPPING</span><i class="icon-refresh"></i></a>
+					</aside><!-- End .col-lg-3 -->
+				</div><!-- End .row -->
+			</div><!-- End .container -->
+		</div><!-- End .cart -->
+	</div><!-- End .page-content -->
+</main><!-- End .main -->
 
-												</td>
-											</tr><!-- End .summary-subtotal -->
-											
-												<tr class="summary-shipping">
-												<td>Shipping:</td>
-												<td>&nbsp;</td>
-												</tr>
-												
-												<tr class="summary-shipping-row">
-													<td>
-														<div class="custom-control custom-radio">
-														<input type="radio" id="free-shipping" name="shipping" class="custom-control-input" checked>
-														<label class="custom-control-label" for="free-shipping">Free Shipping</label>
-														</div>
-													</td>
-													<td id="shipping-cost">{{ '₹ ' }}0.00</td>
-												</tr>	
-												<tr class="summary-total">
-													<td>Grand Total:</td>
-													<td id="grand-total">{{ '₹ ' }}{{ cart.get_cart_total }}</td>
-												</tr><!-- End .summary-total -->
-											</tbody>
-											</table><!-- End .table table-summary -->
-												
-											<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-											<!-- <script>
-												$(document).ready(function () {
-													// Initial values
-													var subtotal = parseFloat("{{ cart_items.order.0.get_cart_total }}");
-													var shippingCosts = {
-														'free': 0.00,
-														'standard': 10.00,
-														'express': 20.00
-													};
-												
-													// Function to update the total amount
-													function updateTotal() {
-														// Check the selected shipping method
-														var shippingMethod = $('input[name="shipping"]:checked').attr('id').replace('-shipping', '');
-														var shippingCost = shippingCosts[shippingMethod];
-												
-														// Calculate the new total
-														var total = subtotal + shippingCost;
-												
-														// Update the HTML elements
-														$('#subtotal').text('{{ "₹ " }}' + subtotal.toFixed(2));
-														$('#shipping-cost').text('{{ "₹ " }}' + shippingCost.toFixed(2));
-														$('#grand-total').text('{{ "₹ " }}' + total.toFixed(2));
-													}
-												
-													// Listen for changes in the shipping method
-													$('input[name="shipping"]').change(function () {
-														updateTotal();
-													});
-												
-													// Initial total update
-													updateTotal();
-												});
-												</script> -->
-												
+{% include 'user_authentication/inc/footer.html' %}
+</div><!-- End .page-wrapper -->
+<button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
 
-										<a href="{% url 'carts:checkout' %}" class="btn btn-outline-primary-2 btn-order btn-block">PROCEED TO CHECKOUT</a>
-									</div><!-- End .summary -->
 
-		            			<a href="{% url 'store:shop' %}" class="btn btn-outline-dark-2 btn-block mb-3"><span>CONTINUE SHOPPING</span><i class="icon-refresh"></i></a>
-	                		</aside><!-- End .col-lg-3 -->
-	                	</div><!-- End .row -->
-	                </div><!-- End .container -->
-                </div><!-- End .cart -->
-            </div><!-- End .page-content -->
-        </main><!-- End .main -->
 
-        {% include 'user_authentication/inc/footer.html' %}
-    </div><!-- End .page-wrapper -->
-    <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+<!-- Plugins JS File -->
+<script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
+<script src="{% static 'user_auth/assets/js/bootstrap-input-spinner.js' %}"></script>
+<!-- Main JS File -->
+<script src="{% static 'user_auth/assets/js/main.js' %}"></script>
+<script>
+	const searchInput = document.getElementById('searchInput');
+	const searchResults = document.getElementById('searchResults');
+	const searchForm = document.getElementById('searchForm');
 
-   
+	searchInput.addEventListener('input', function () {
+		const query = searchInput.value.trim();
 
-    <!-- Plugins JS File -->
-    <script src="{% static 'user_auth/assets/js/jquery.min.js' %}"></script>
-    <script src="{% static 'user_auth/assets/js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'user_auth/assets/js/jquery.hoverIntent.min.js' %}"></script>
-    <script src="{% static 'user_auth/assets/js/jquery.waypoints.min.js' %}"></script>
-    <script src="{% static 'user_auth/assets/js/superfish.min.js' %}"></script>
-    <script src="{% static 'user_auth/assets/js/owl.carousel.min.js' %}"></script>
-    <script src="{% static 'user_auth/assets/js/bootstrap-input-spinner.js' %}"></script>
-    <!-- Main JS File -->
-    <script src="{% static 'user_auth/assets/js/main.js' %}"></script>
-	<script>
-        const searchInput = document.getElementById('searchInput');
-        const searchResults = document.getElementById('searchResults');
-        const searchForm = document.getElementById('searchForm');
-    
-        searchInput.addEventListener('input', function() {
-            const query = searchInput.value.trim();
-    
-            if (query.length === 0) {
-                searchResults.innerHTML = '';
-                return;
-            }
-    
-            fetch(`/search/?q=${query}`)
-                .then(response => response.json())
-                .then(data => {
-                    searchResults.innerHTML = '';
-                    console.log(data)
-    
-                    if (data.length > 0) {
-                        const resultList = document.createElement('ul');
-    
-                        data.forEach(result => {
-                            const listItem = document.createElement('li');
-                            const link = document.createElement('a');
-    
-                            link.textContent = result.product_name;
-                            link.href = `/store/product/${result.productId}`; 
-                            console.log('SEARCH SCRIPT WORKING');
-    
-                            listItem.appendChild(link);
-                            resultList.appendChild(listItem);
-                        });
-                        searchResults.appendChild(resultList);
-                    } else {
-                        searchResults.innerHTML = 'No results found.';
-                    }
-                })
-                .catch(error => console.error('Error fetching search results:', error));
-        });
-    
-        // Optional: Close the suggestion dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('#searchResults')) {
-                searchResults.innerHTML = '';
-            }
-        });
-    </script> 
+		if (query.length === 0) {
+			searchResults.innerHTML = '';
+			return;
+		}
+
+		fetch(`/search/?q=${query}`)
+			.then(response => response.json())
+			.then(data => {
+				searchResults.innerHTML = '';
+				console.log(data)
+
+				if (data.length > 0) {
+					const resultList = document.createElement('ul');
+
+					data.forEach(result => {
+						const listItem = document.createElement('li');
+						const link = document.createElement('a');
+
+						link.textContent = result.product_name;
+						link.href = `/store/product/${result.productId}`;
+
+						listItem.appendChild(link);
+						resultList.appendChild(listItem);
+					});
+					searchResults.appendChild(resultList);
+				} else {
+					searchResults.innerHTML = 'No results found.';
+				}
+			})
+			.catch(error => console.error('Error fetching search results:', error));
+	});
+
+	// Optional: Close the suggestion dropdown when clicking outside
+	document.addEventListener('click', function (event) {
+		if (!event.target.closest('#searchResults')) {
+			searchResults.innerHTML = '';
+		}
+	});
+</script>
+<script>
+	function getCSRFToken() {
+		const cookies = document.cookie.split(';');
+		for (let i = 0; i < cookies.length; i++) {
+			const cookie = cookies[i].trim();
+			if (cookie.startsWith('csrftoken=')) {
+				return cookie.substring('csrftoken='.length, cookie.length);
+			}
+		}
+		return null;
+	}
+
+	function cartManage(product_id, action, qty, price) {
+		// alert(qty)
+		const priceTxt = document.getElementById(`T${product_id}`)
+		const csrfToken = getCSRFToken();
+		const qtyInput = document.getElementById(`Q${product_id}`)
+		const total = document.getElementById("grand-total")
+		if (action == "decrement" && qty == 1) {
+			console.log("action not valid");
+		} else {
+			$.ajax({
+				url: "/cart/cart/update_cart/",
+				method: 'post',
+				data: {
+					product_id: product_id,
+					action: action,
+					csrfmiddlewaretoken: csrfToken // Include the CSRF token in the data
+				},
+				success: function (response) {
+					console.log("Success:", response);
+					// $('#quantity-display').text(response.updated_quantity);
+					qtyInput.value = response.updated_quantity
+					const newPrice = Math.trunc(price*response.updated_quantity)
+					priceTxt.innerHTML = `₹${newPrice}`
+					// alert(response.total)
+					total.innerHTML = `₹ ${response.total }`
+
+
+				},
+				error: function (error) {
+					console.error("Error:", error);
+				}
+			});
+		}
+
+
+	}
+
+
+</script>
 </body>
+
 </html>

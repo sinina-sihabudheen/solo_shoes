@@ -16,8 +16,8 @@
             <nav aria-label="breadcrumb" class="breadcrumb-nav">
                 <div class="container">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Shop</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'user_authentication:home' %}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'store:shop' %}">Shop</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Checkout</li>
                     </ol>
                 </div><!-- End .container -->
@@ -87,14 +87,24 @@
 														</tr>
 													{% endfor %}
 	
-													<!-- <tr class="summary-subtotal">
-														<td>Subtotal:</td>
-														<td>{{ '₹ ' }}{{ cart.get_cart_total }}</td>
-													</tr>End .summary-subtotal -->
+													<tr class="summary-subtotal">
+														<td>Saved Amount By Offer:</td>
+														<td>{{ '₹ ' }}{{ total }}</td>
+													</tr>
 	
 													<tr>
 														<td>Shipping:</td>
 														<td>Free shipping</td>
+													</tr>
+													<tr>{% if cart.coupon %}
+														<td>Total Amount:</td>
+														<td>{{ cart.get_cart_total|add:cart.coupon.discount_price }}</td>
+														{% endif %}
+													</tr>
+													<tr>{% if cart.coupon %}
+														<td>Coupon Amount:</td>
+														<td>{{ cart.coupon.discount_price }}</td>
+														{% endif %}
 													</tr>
 	
 													<tr class="summary-total">
@@ -170,17 +180,9 @@
 										<div class="custom-control">
 											<!-- Add new address button -->
 											<a href="{% url 'carts:add_address' %}" class="btn btn-outline-primary-2 btn-order">Add Address</a>
-										</div>
-
-										
-
-				
-
-							
-
-								</div><!-- End .col-lg-9 -->
-		                	</div><!-- End .row -->
-            			
+										</div>		
+									</div><!-- End .col-lg-9 -->
+		                	</div><!-- End .row -->            			
 	                </div><!-- End .container -->
                 </div><!-- End .checkout -->
             </div><!-- End .page-content -->
@@ -246,7 +248,7 @@
             "image": "https://example.com/your_logo",
        
             "handler": function (responseb){
-                alert(responseb.razorpay_payment_id);
+                //alert(responseb.razorpay_payment_id);
 
                data = {
                 'selectedAddressId':selectedAddressId,

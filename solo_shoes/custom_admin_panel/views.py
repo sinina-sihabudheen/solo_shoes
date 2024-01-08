@@ -22,6 +22,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.http import require_GET
 from django.db.models.functions import TruncWeek, TruncMonth, TruncDay
 from .forms import OfferForm,OfferCategoryForm, CouponForm
+from django.views.decorators.http import require_POST
 
 
 # Create your views here.
@@ -57,9 +58,21 @@ def dashboard(request):
         
         all_orders = Cart.objects.all()
 
-        order_delivered = CartItem.objects.filter(delivery_status='D')
+        all_orders_filter = Cart.objects.filter(
+    (
+        Q(payment_method='COD') & Q(cartitem__delivery_status='D')
+    ) | (
+        Q(payment_method__in=['RAZ', 'WAL']) & ~Q(cartitem__delivery_status__in=['C', 'RT'])
+    )
+)
         
-        all_order_items = CartItem.objects.filter(~Q(delivery_status='C'))
+        
+        order_delivered = CartItem.objects.filter(
+    Q(order__payment_method='COD') | Q(order__payment_method='RAZ') | Q(order__payment_method='WAL'),
+    ~Q(delivery_status__in=['C', 'RT'])
+)
+        
+        all_order_items = CartItem.objects.filter(~Q(delivery_status='C') or ~Q(delivery_status='RT'))
         
 
         
@@ -81,8 +94,8 @@ def dashboard(request):
             all_orders = all_orders.filter(date_added__gte=start_date)
         products = Product.objects.all()
         
-        total_revenue = sum(order.get_cart_total_at_order for order in all_orders)
-        total_sales = sum(order.get_cart_items for order in all_orders)
+        total_revenue = sum(order.get_total for order in order_delivered)
+        total_sales = all_orders_filter.count()
         total_stock = sum(product.stock for product in products)
                      
         cod_orders = all_orders.filter(payment_method='COD')
@@ -98,8 +111,15 @@ def dashboard(request):
         raz_total = sum(order.get_cart_total_at_order for order in raz_orders)
         wallet_total = sum(order.get_cart_total_at_order for order in wallet_orders)
 
-         
-        
+        returned_amount_cod = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='COD', delivery_status='RT'))
+        cancelled_amount_cod = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='COD', delivery_status='CN'))
+
+        returned_amount_raz = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='RAZ',delivery_status='RT'))
+        cancelled_amount_raz = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='RAZ',delivery_status='CN'))
+
+        returned_amount_wallet = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='WAL',delivery_status='RT'))
+        cancelled_amount_wallet = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='WAL',delivery_status='CN'))
+                
 
         context = {
             'user':user,
@@ -116,6 +136,12 @@ def dashboard(request):
             'filter_type': filter_type,  
             'order_delivered': order_delivered,
             'total_stock' : total_stock,
+            'returned_amount_cod': returned_amount_cod,
+            'returned_amount_raz': returned_amount_raz,
+            'returned_amount_wallet': returned_amount_wallet,
+            'cancelled_amount_cod': cancelled_amount_cod,
+            'cancelled_amount_raz': cancelled_amount_raz,
+            'cancelled_amount_wallet': cancelled_amount_wallet,
         }
 
         return render(request,'custom_admin_panel/dashboard.html',context)
@@ -340,14 +366,7 @@ def product_management(request):
 @login_required(login_url='custom_admin_panel:adminlogin')
 def order(request):
        
-    # orders_with_items = Cart.objects.filter(complete=True).prefetch_related(
-    #     Prefetch('cartitem_set', queryset=CartItem.objects.select_related('product'))
-    # ).all()   
-
-    # context = {
-    #     'orders_with_items': orders_with_items,
-    # }
-    # return render(request, 'custom_admin_panel/order_list.html', context)
+    
     orders_with_items = Cart.objects.filter(complete=True).all()
 
     context = {
@@ -355,6 +374,7 @@ def order(request):
     }
     return render(request, 'custom_admin_panel/order_list.html', context)
 
+@login_required(login_url='custom_admin_panel:adminlogin')
 def order_details(request, order_item_id):
     order = get_object_or_404(Cart, id=order_item_id, complete=True)
     order_items = order.cartitem_set.all()
@@ -370,6 +390,7 @@ def order_details(request, order_item_id):
 
     return render(request, 'custom_admin_panel/order_details.html', context)
 
+@login_required(login_url='custom_admin_panel:adminlogin')
 def order_edit(request, order_item_id):
     
     order_item = get_object_or_404(CartItem, id=order_item_id)
@@ -389,6 +410,7 @@ def order_edit(request, order_item_id):
 
     return render(request, 'custom_admin_panel/order_form.html', context)
 
+@login_required(login_url='custom_admin_panel:adminlogin')
 def cancel_order(request, order_item_id):
     order = get_object_or_404(CartItem, id=order_item_id)
     order.delivery_status = 'CN'
@@ -408,6 +430,7 @@ def manage_offers_view(request):
 
     return render(request, 'custom_admin_panel/offer.html', context)
 
+@login_required(login_url='custom_admin_panel:adminlogin')
 def category_off_add(request):
     if request.method == 'POST':
         form = OfferCategoryForm(request.POST, request.FILES)
@@ -432,7 +455,7 @@ def category_off_add(request):
 
 
 
-
+@login_required(login_url='custom_admin_panel:adminlogin')
 def category_off_edit(request, offer_id):
     offer = get_object_or_404(OfferCategory, pk=offer_id)
 
@@ -459,7 +482,7 @@ def category_off_edit(request, offer_id):
 
     return render(request, 'custom_admin_panel/category_offer.html', context)
 
-
+@login_required(login_url='custom_admin_panel:adminlogin')
 def product_off_add(request):
     if request.method == 'POST':
         form = OfferForm(request.POST or None)
@@ -480,6 +503,7 @@ def product_off_add(request):
 
     return render(request, 'custom_admin_panel/product_offer.html', {'form': form})
 
+@login_required(login_url='custom_admin_panel:adminlogin')
 def product_off_edit(request, offer_id):
     offer = get_object_or_404(Offer, pk=offer_id)
     form = OfferForm(instance=offer)
@@ -506,21 +530,30 @@ def product_off_edit(request, offer_id):
 
     return render(request, 'custom_admin_panel/product_offer.html', context)
 
+# @login_required(login_url='custom_admin_panel:adminlogin')
+# def sales_report(request):
+#     delivered_order_items = CartItem.objects.filter(delivery_status='D' or Q(order__payment_method='RAZ' or 'WAL'))
+#     # delivered_order_items = CartItem.objects.filter(order__delivery_status='D')
+
+#     most_sold_products = (
+#         delivered_order_items.values('product_price_at_order')
+#         .annotate(total_sold=Sum('quantity'))
+#         .order_by('-total_sold')[:6]
+#     )    
+#     return render(request,'custom_admin_panel/sales_report.html', { 'most_sold_products':most_sold_products })
 @login_required(login_url='custom_admin_panel:adminlogin')
 def sales_report(request):
-    delivered_order_items = CartItem.objects.filter(delivery_status='D')
-    print(delivered_order_items)
-    most_sold_products = (
-        delivered_order_items.values('product_price_at_order')
-        .annotate(total_sold=Sum('quantity'))
-        .order_by('-total_sold')[:6]
-    )    
-    return render(request,'custom_admin_panel/sales_report.html', { 'most_sold_products':most_sold_products })
+    orders_with_items = Cart.objects.filter(complete=True).all()
+
+    context = {
+        'orders_with_items': orders_with_items,
+    }
+ 
+    return render(request,'custom_admin_panel/sales_report.html', context)
 
 @require_GET
 def get_sales_data(request, period):
-    # Your logic to filter and aggregate data based on the selected period
-    # Example: Weekly sales
+    
     if period == 'week':
         start_date = timezone.now().date() - timezone.timedelta(days=6)
         order_items = CartItem.objects.filter(order__date_added__gte=start_date)
@@ -531,7 +564,7 @@ def get_sales_data(request, period):
             .order_by('day')
         )
         labels = [item['day'].strftime('%A') for item in data]
-        # Example: Monthly sales
+        
     elif period == 'month':
         print("Entering into the month")
         start_date = timezone.now().date() - timezone.timedelta(days=30)
@@ -565,41 +598,43 @@ def get_sales_data(request, period):
     return JsonResponse({'labels': labels, 'data': sales_data})
 
 
-
 @login_required(login_url='custom_admin_panel:adminlogin')
+@require_POST
 def sales_details(request):
-    if request.method == 'POST':
-        start_date_str = request.POST.get('startDate')
-        end_date_str = request.POST.get('endDate')
-       
-        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
-        
-        # Use timezone-aware dates to handle Django's timezone settings
-        start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
-        end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
-        
-        # Filter orders based on the date range
-        order_items = CartItem.objects.filter(
-            order__date_added__range=(start_date, end_date),
-            order__isnull=False
-        )
-     
-        product_quantities = order_items.values('product_price_at_order').annotate(total_quantity=Sum('quantity'))  
+    start_date_str = request.POST.get('start_date')
+    end_date_str = request.POST.get('end_date')
 
-        context = {
-            'order_items': order_items,
-            'product_quantities': product_quantities,
-            'start_date': start_date_str,
-            'end_date': end_date_str,
-        } 
+    if not start_date_str or not end_date_str:
+        return HttpResponseBadRequest("Invalid date parameters")
+    
+    start_date = datetime.strptime(start_date_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
 
-        return render(request, 'custom_admin_panel/salespdf.html', context)
+    end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
 
-    # Handle the case when the request method is not POST
-    return HttpResponseBadRequest("Invalid request method")
+    start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
+    end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
 
+    
+    order_items = CartItem.objects.filter(
+    Q(order__date_added__range=(start_date, end_date)) &
+    Q(order__isnull=False) &
+    Q(delivery_status='D') |
+    Q(
+        Q(order__payment_method__in=['WAL', 'RAZ']) &
+        ~Q(delivery_status__in=['RT', 'CN'])
+    )
+)
 
+    product_quantities = order_items.values('product_price_at_order').annotate(total_quantity=Sum('quantity'))
+
+    context = {
+        'order_items': order_items,
+        'product_quantities': product_quantities,
+        'start_date': start_date_str,
+        'end_date': end_date_str,
+    }
+
+    return render(request, 'custom_admin_panel/salespdf.html', context)
 
 def coupon_list(request):
     coupons= Coupon.objects.all()
@@ -619,25 +654,25 @@ def add_coupon(request):
     
     return render(request, 'custom_admin_panel/coupon_form.html', {'form': form})
 
-# def edit_coupon(request,coupon_id):
+def edit_coupon(request,coupon_id):
 
-#     coupon = get_object_or_404(Coupon, pk=coupon_id)
+    coupon = get_object_or_404(Coupon, pk=coupon_id)
 
-#     if request.method == 'POST':
-#             form = CouponForm(request.POST, request.FILES, instance=coupon)
-#             if form.is_valid():
-#                 form.save()
-#                 return redirect('custom_admin_panel:coupon_list')
-#     else:
-#             form = CouponForm(instance=coupon)
+    if request.method == 'POST':
+            form = CouponForm(request.POST, request.FILES, instance=coupon)
+            if form.is_valid():
+                form.save()
+                return redirect('custom_admin_panel:coupon_list')
+    else:
+            form = CouponForm(instance=coupon)
         
-#     context = {
-#                 'form': form,
-#                 'coupon': coupon,
+    context = {
+                'form': form,
+                'coupon': coupon,
 
-#         }
+        }
         
-#     return render(request, 'custom_admin_panel/coupon_form.html', context)
+    return render(request, 'custom_admin_panel/coupon_form.html', context)
 
 def toggle_coupon_status(request, coupon_id):
     coupon = get_object_or_404(Coupon, pk=coupon_id)
@@ -661,63 +696,3 @@ def admin_logout(request):
     return redirect('custom_admin_panel:adminlogin')
 
 
-
-
-# @superuser_required
-# def admin_dash(request):
-#     all_orders = Order.objects.all()
-#     all_variations = ProductLanguageVariation.objects.all()
-#     all_order_items = OrderItem.objects.all()
-    
-#     filter_type = request.GET.get('filter_type', 'all')  
-
- 
-#     if filter_type == 'day':
-#         start_date = datetime.now() - timedelta(days=1)
-#     elif filter_type == 'week':
-#         start_date = datetime.now() - timedelta(weeks=1)
-#     elif filter_type == 'month':
-#         start_date = datetime.now() - timedelta(weeks=4)  
-#     elif filter_type == 'year':
-#         start_date = datetime.now() - timedelta(weeks=52)  
-#     else:
-#         start_date = None  
-    
-#     if start_date:
-#         all_orders = all_orders.filter(date_ordered__gte=start_date)
-
-   
-#     total_revenue = sum(order.get_cart_total for order in all_orders)
-#     total_sales = sum(order.get_cart_items for order in all_orders)
-#     total_stock = sum(variation.stock for variation in all_variations)
-    
-    
-#     cod_orders = all_orders.filter(payment_method='COD')
-#     online_orders = all_orders.filter(payment_method='RAZ') 
-#     wallet_orders = all_orders.filter(payment_method='WAL')
-
-#     cod_count = cod_orders.count()
-#     online_count = online_orders.count()
-#     wallet_count = wallet_orders.count()
-
-#     cod_total = sum(order.get_cart_total for order in cod_orders)
-#     online_total = sum(order.get_cart_total for order in online_orders)
-#     wallet_total = sum(order.get_cart_total for order in wallet_orders)
-
-    
-#     context = {
-#         'total_revenue': total_revenue,
-#         'total_sales' : total_sales,
-#         'total_stock':total_stock,
-#         'all_orders':all_orders,
-#         'all_order_items':all_order_items,
-#         'cod_count': cod_count,
-#         'online_count': online_count,
-#         'wallet_count': wallet_count,
-#         'cod_total': cod_total,
-#         'online_total': online_total,
-#         'wallet_total': wallet_total,
-#         'filter_type': filter_type,  
-
-#     }
-#     return render(request, 'admin_panel/admin_dash.html', context)

@@ -31,14 +31,15 @@
                 <td>{{ offer.date_start }}</td>
                 <td>{{ offer.date_end }}</td>
                 <td>{{ offer.active }}</td>
-                <td><a href="{% url 'custom_admin_panel:category_off_edit' offer.id %}"><span>Edit Offer</span></a></td>
+                <td><a href="{% url 'custom_admin_panel:category_off_edit' offer.id %}" class="btn btn-inverse-info"><span>Edit Offer</span></a></td>
                 </tr>
             {% endfor %}
 
             </tbody>
         </table>
-        <a href="{% url 'custom_admin_panel:category_off_add' %}" class="addlink">Add New Offer</a>
+        <a href="{% url 'custom_admin_panel:category_off_add' %}" class="addlink btn btn-inverse-info">Add New Offer</a><br><br>
     </div>
+    
 
     <h3>Product Offers</h3>
     <div class="table-responsive">
@@ -64,14 +65,14 @@
                 <td>{{ offer.date_start }}</td>
                 <td>{{ offer.date_end }}</td>
                 <td>{{ offer.active }}</td>
-                <td><a href="{% url 'custom_admin_panel:product_off_edit' offer.id %}"><span>Edit Offer</span></a></td>
+                <td><a href="{% url 'custom_admin_panel:product_off_edit' offer.id %}" class="btn btn-inverse-info"><span>Edit Offer</span></a></td>
                 </tr>
             {% endfor %}
             </tbody>
         </table>
 
     <!-- Add buttons or links to manage offers -->
-    <a href="{% url 'custom_admin_panel:product_off_add' %}" class="addlink">Add New Offer</a>
+    <a href="{% url 'custom_admin_panel:product_off_add' %}" class="addlink btn btn-inverse-info">Add New Offer</a>
   </div>
 </div>
 </div>

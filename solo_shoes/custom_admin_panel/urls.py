@@ -50,7 +50,7 @@ urlpatterns = [
     
     path('coupon_list/', views.coupon_list, name='coupon_list'),
     path('add_coupon/', views.add_coupon, name='add_coupon'),
-    # path('edit_coupon/<int:coupon_id>', views.edit_coupon, name='edit_coupon'),
+    path('edit_coupon/<int:coupon_id>', views.edit_coupon, name='edit_coupon'),
     path('block_coupon/<int:coupon_id>', views.block_coupon, name='block_coupon'),
     path('unblock_coupon/<int:coupon_id>', views.unblock_coupon, name='unblock_coupon'),
     path('toggle_coupon_status/<int:coupon_id>', views.toggle_coupon_status, name='toggle_coupon_status'),

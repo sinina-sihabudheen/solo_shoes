@@ -30,7 +30,7 @@
                                                 <td>{{ order_item.order.id }}</td>
                                                 <td>{{ order_item.order.user.username }}</td>
                                                 <td>{{ order_item.product.product_name }}</td>                                               
-                                                <td>{{ order_item.order.date_added }}</td>
+                                                <td>{{ order_item.order.date_added|date:"D, d F" }}</td>
                                                 <td>{{ order_item.order.payment_method }}</td>                                              
                                                 <td>{{ order_item.quantity }}</td>
                                                 <td>{{ order_item.get_total }}</td>

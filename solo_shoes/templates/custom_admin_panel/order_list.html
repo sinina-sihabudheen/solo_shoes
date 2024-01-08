@@ -15,9 +15,11 @@
                                     <tr>
                                         <th>Order ID</th>
                                         <th>Username</th>
+                                        <th>Date Ordered</th>
                                         <th>Payment Method</th>
                                         <th>Order Status</th>
                                         <th>Applied Coupon</th>
+                                        <th>Coupon Amount</th>
                                         <th>Total Quantity</th>
                                         <th>Total Amount</th>
                                         <th>Action</th>
@@ -28,6 +30,7 @@
                                         <tr>
                                             <td>{{ order.id }}</td>
                                             <td>{{ order.user.username }}</td>
+                                            <td>{{ order.date_added|date:"D, d F" }}</td>
                                             <td>{{ order.payment_method }}</td>
                                             <td>
                                                 {% for order_item in order.cartitem_set.all %}
@@ -37,6 +40,7 @@
                                                 {% endfor %}
                                             </td>
                                             <td>{{ order.coupon.coupon_code|default:'N/A' }}</td>
+                                            <td>{{ order.coupon.discount_price|default:'N/A' }}</td>
                                             <td>{{ order.get_cart_items }}</td>
                                             <td>{{ order.cart_total_at_order }}</td>
                                             <td>
