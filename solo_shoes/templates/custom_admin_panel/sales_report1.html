@@ -186,3 +186,88 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+sales_details:
+# first
+
+# @login_required(login_url='custom_admin_panel:adminlogin')
+# @require_POST
+# def sales_details(request):
+#     start_date_str = request.POST.get('start_date')    
+#     end_date_str = request.POST.get('end_date')    
+
+#     if not start_date_str or not end_date_str:
+#         return HttpResponseBadRequest("Invalid date parameters")
+    
+#     start_date = datetime.strptime(start_date_str, '%Y-%m-%d') if start_date_str else None
+#     end_date = datetime.strptime(end_date_str, '%Y-%m-%d') if end_date_str else None
+    
+   
+
+    
+#     order_items = CartItem.objects.filter(
+#     Q(order__date_added__gte=start_date, order__date_added__lte=end_date) &
+#     Q(order__complete=True) &
+#     Q(Q(delivery_status='D') |
+#     Q(
+#         Q(order__payment_method__in=['WAL', 'RAZ']) &
+#         ~Q(delivery_status__in=['RT', 'CN'])
+#     )))
+#     product_quantities = order_items.values('product_price_at_order').annotate(total_quantity=Sum('quantity'))
+
+#     context = {
+#         'order_items': order_items,
+#         'product_quantities': product_quantities,
+#         'start_date': start_date_str,
+#         'end_date': end_date_str,
+#     }
+
+#     return render(request, 'custom_admin_panel/salespdf.html', context)
+
+
+
+#second
+# @login_required(login_url='custom_admin_panel:adminlogin')
+# @require_POST
+# def sales_details(request):
+#     start_date_str = request.POST.get('start_date')    
+#     end_date_str = request.POST.get('end_date')    
+
+#     if not start_date_str or not end_date_str:
+#         return HttpResponseBadRequest("Invalid date parameters")
+
+  
+#     start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d'))
+#     end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d'))
+
+  
+#     single_day = start_date.date() == end_date.date()
+
+#     order_items = CartItem.objects.filter(
+#         Q(order__date_added__date=start_date.date()) &
+#         Q(order__complete=True) &
+#         Q(Q(delivery_status='D') |
+#           Q(
+#               Q(order__payment_method__in=['WAL', 'RAZ']) &
+#               ~Q(delivery_status__in=['RT', 'CN'])
+#           )))
+
+   
+#     if single_day:
+#         order_items = order_items.filter(order__date_added__date=start_date.date())
+
+#     product_quantities = order_items.values('product_price_at_order').annotate(total_quantity=Sum('quantity'))
+
+#     context = {
+#         'order_items': order_items,
+#         'product_quantities': product_quantities,
+#         'start_date': start_date_str,
+#         'end_date': end_date_str,
+#     }
+
+#     return render(request, 'custom_admin_panel/salespdf.html', context)
+

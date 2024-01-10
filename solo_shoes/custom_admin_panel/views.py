@@ -65,12 +65,16 @@ def dashboard(request):
         Q(payment_method__in=['RAZ', 'WAL']) & ~Q(cartitem__delivery_status__in=['C', 'RT'])
     )
 )
+   
         
-        
-        order_delivered = CartItem.objects.filter(
-    Q(order__payment_method='COD') | Q(order__payment_method='RAZ') | Q(order__payment_method='WAL'),
-    ~Q(delivery_status__in=['C', 'RT'])
-)
+        order_delivered =CartItem.objects.filter(
+    Q(order__complete=True) &
+    Q(Q(delivery_status='D') |
+    Q(
+        Q(order__payment_method__in=['WAL', 'RAZ']) &
+        ~Q(delivery_status__in=['RT', 'CN'])
+    )))
+        print(order_delivered)
         
         all_order_items = CartItem.objects.filter(~Q(delivery_status='C') or ~Q(delivery_status='RT'))
         
@@ -96,11 +100,12 @@ def dashboard(request):
         
         total_revenue = sum(order.get_total for order in order_delivered)
         total_sales = all_orders_filter.count()
+      
         total_stock = sum(product.stock for product in products)
                      
-        cod_orders = all_orders.filter(payment_method='COD')
-        raz_orders = all_orders.filter(payment_method='RAZ')
-        wallet_orders = all_orders.filter(payment_method='WAL')
+        cod_orders = all_orders_filter.filter(payment_method='COD')
+        raz_orders = all_orders_filter.filter(payment_method='RAZ')
+        wallet_orders = all_orders_filter.filter(payment_method='WAL')
 
         cod_count = cod_orders.count()    
         raz_count = raz_orders.count()
@@ -120,6 +125,8 @@ def dashboard(request):
         returned_amount_wallet = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='WAL',delivery_status='RT'))
         cancelled_amount_wallet = sum(item.get_total_at_order for item in all_order_items.filter(order__payment_method='WAL',delivery_status='CN'))
                 
+
+
 
         context = {
             'user':user,
@@ -530,20 +537,17 @@ def product_off_edit(request, offer_id):
 
     return render(request, 'custom_admin_panel/product_offer.html', context)
 
-# @login_required(login_url='custom_admin_panel:adminlogin')
-# def sales_report(request):
-#     delivered_order_items = CartItem.objects.filter(delivery_status='D' or Q(order__payment_method='RAZ' or 'WAL'))
-#     # delivered_order_items = CartItem.objects.filter(order__delivery_status='D')
 
-#     most_sold_products = (
-#         delivered_order_items.values('product_price_at_order')
-#         .annotate(total_sold=Sum('quantity'))
-#         .order_by('-total_sold')[:6]
-#     )    
-#     return render(request,'custom_admin_panel/sales_report.html', { 'most_sold_products':most_sold_products })
 @login_required(login_url='custom_admin_panel:adminlogin')
 def sales_report(request):
-    orders_with_items = Cart.objects.filter(complete=True).all()
+    # orders_with_items = Cart.objects.filter(complete=True).all()[:10]
+    orders_with_items = CartItem.objects.filter(
+    Q(order__complete=True) &
+    Q(Q(delivery_status='D') |
+    Q(
+        Q(order__payment_method__in=['WAL', 'RAZ']) &
+        ~Q(delivery_status__in=['RT', 'CN'])
+    )))
 
     context = {
         'orders_with_items': orders_with_items,
@@ -551,79 +555,38 @@ def sales_report(request):
  
     return render(request,'custom_admin_panel/sales_report.html', context)
 
-@require_GET
-def get_sales_data(request, period):
-    
-    if period == 'week':
-        start_date = timezone.now().date() - timezone.timedelta(days=6)
-        order_items = CartItem.objects.filter(order__date_added__gte=start_date)
-        data = (
-            order_items.annotate(day=TruncDay('order__date_added'))
-            .values('day')
-            .annotate(total=Sum(F('quantity') * F('product_price_at_order')))
-            .order_by('day')
-        )
-        labels = [item['day'].strftime('%A') for item in data]
-        
-    elif period == 'month':
-        print("Entering into the month")
-        start_date = timezone.now().date() - timezone.timedelta(days=30)
-        order_items = CartItem.objects.filter(order__date_added__gte=start_date)
-        data = (
-        order_items.annotate(day=TruncDay('order__date_added'))
-        .values('day')
-        .annotate(total=Sum(F('quantity') * F('product_price_at_order')))
-        .order_by('day')
-    )
-        labels = [item['day'].strftime('%Y-%m-%d') for item in data]
-    # Example: Yearly sales
-    elif period == 'year':
-        print("Entering into the year")
-        start_date = timezone.now().date() - timezone.timedelta(days=365)
-        order_items = CartItem.objects.filter(order__date_added__gte=start_date)
-        data = (
-            order_items.annotate(month=TruncMonth('order__date_added'))
-            .values('month')
-            .annotate(total=Sum(F('quantity') * F('product_price_at_order')))
-            .order_by('month')
-        )
-        labels = [f"{item['month'].strftime('%B')}" for item in data]
-    else:
-        return JsonResponse({'error': 'Invalid period'})
 
-    
-    
-    sales_data = [item['total'] for item in data]
-
-    return JsonResponse({'labels': labels, 'data': sales_data})
-
-
-@login_required(login_url='custom_admin_panel:adminlogin')
-@require_POST
 def sales_details(request):
-    start_date_str = request.POST.get('start_date')
-    end_date_str = request.POST.get('end_date')
+    start_date_str = request.POST.get('start_date')    
+    end_date_str = request.POST.get('end_date')    
 
     if not start_date_str or not end_date_str:
         return HttpResponseBadRequest("Invalid date parameters")
-    
-    start_date = datetime.strptime(start_date_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
 
-    end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
+    # Convert start_date and end_date to timezone-aware datetime objects
+    start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d'))
+    end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d'))
 
-    start_date = timezone.make_aware(start_date, timezone.get_current_timezone())
-    end_date = timezone.make_aware(end_date, timezone.get_current_timezone())
+    # Check if start and end dates are the same day
+    single_day = start_date.date() == end_date.date()
 
-    
     order_items = CartItem.objects.filter(
-    Q(order__date_added__range=(start_date, end_date)) &
-    Q(order__isnull=False) &
-    Q(delivery_status='D') |
-    Q(
-        Q(order__payment_method__in=['WAL', 'RAZ']) &
-        ~Q(delivery_status__in=['RT', 'CN'])
-    )
-)
+        Q(order__date_added__gte=start_date) &
+        Q(order__date_added__lt=end_date + timedelta(days=1)) &  # Use less than for the end_date
+        Q(order__complete=True) &
+        Q(Q(delivery_status='D') |
+          Q(
+              Q(order__payment_method__in=['WAL', 'RAZ']) &
+              ~Q(delivery_status__in=['RT', 'CN'])
+          )))
+
+    # If it's a single day, filter based on date instead of date range
+    if single_day:
+        order_items = order_items.filter(order__date_added__date=start_date.date())
+
+    # Print statements for debugging
+    print("start_date:", start_date)
+    print("end_date:", end_date)
 
     product_quantities = order_items.values('product_price_at_order').annotate(total_quantity=Sum('quantity'))
 
@@ -635,6 +598,7 @@ def sales_details(request):
     }
 
     return render(request, 'custom_admin_panel/salespdf.html', context)
+
 
 def coupon_list(request):
     coupons= Coupon.objects.all()

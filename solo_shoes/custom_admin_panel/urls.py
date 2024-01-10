@@ -45,7 +45,6 @@ urlpatterns = [
     path('category_off_add/', views.category_off_add, name='category_off_add'),
 
     path('sales_report/', views.sales_report, name='sales_report'),
-    path('get_sales_data/<str:period>/', views.get_sales_data, name='get_sales_data'),
     path('sales_details/', views.sales_details, name='sales_details'),
     
     path('coupon_list/', views.coupon_list, name='coupon_list'),

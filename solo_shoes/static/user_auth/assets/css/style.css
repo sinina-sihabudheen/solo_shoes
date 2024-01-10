@@ -404,7 +404,7 @@ blockquote.text-white cite span {
 }
 
 .mmenu-active .page-wrapper {
-    transform: translateX(200px)
+    /* transform: translateX(200px) */
 }
 
 @media all and (-ms-high-contrast: none),

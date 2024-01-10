@@ -34,12 +34,13 @@
                                                 <td>{{ order_item.order.payment_method }}</td>                                              
                                                 <td>{{ order_item.quantity }}</td>
                                                 <td>{{ order_item.get_total }}</td>
-                                                
-                                            </tr>
                                     {% endfor %}
                                     {% else %}
-                                        <td colspan="7">No order available</td>
+                                        <td colspan="7">No orders available</td>
                                     {% endif %}
+                                                
+                                            </tr>
+                                    
                                 </tbody>
                             </table>
                            

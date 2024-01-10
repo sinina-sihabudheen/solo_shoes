@@ -26,19 +26,19 @@
             <tbody>
                 {% for order in orders_with_items %}
                     <tr>
-                        <td>{{ order.id }}</td>
-                        <td>{{ order.user.username }}</td>
-                        <td>{{ order.date_added|date:"D, d F" }}</td>
-                        <td>{{ order.payment_method }}</td>
+                        <td>{{ order.order.id }}</td>
+                        <td>{{ order.order.user.username }}</td>
+                        <td>{{ order.order.date_added|date:"D, d F" }}</td>
+                        <td>{{ order.order.payment_method }}</td>
                         <td>
-                            {% for order_item in order.cartitem_set.all %}
+                            {% for order_item in order.order.cartitem_set.all %}
                                 {% if forloop.first %}
                                     {{ order_item.get_delivery_status_display }}
                                 {% endif %}
                             {% endfor %}
                         </td>
-                        <td>{{ order.get_cart_items }}</td>
-                        <td>{{ order.cart_total_at_order }}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td>{{ order.get_total }}</td>
                         
                     </tr>
                 {% endfor %}

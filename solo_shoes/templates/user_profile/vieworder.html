@@ -43,149 +43,159 @@
         <div class="row col-12 d-flex mb-0 p-5 ">
             {% for cart_item in order.cartitem_set.all %}
             
-            <div class="mb-5">
+            <div class="mb-5 ">
+                <!-- start box -->
+                <div class="d-flex">
                 <div class="col-md-3 col-12 bg-white d-flex align-items-center" style="border-radius: 6px;">
                     <img class="" src="{{ cart_item.product.productimage_set.first.image.url }}"
                         alt="{{ order_item.product.name }}">
                 </div>
+
                 
-                <div class="col-9 pl-5 mt-2">
-                    <h5 class="card-title">{{ cart_item.product_name_at_order }}</h5>
-                    
-                    <p class="card-text">
-                        Quantity: <b>{{ cart_item.quantity }}</b><br>
-                        Payment Method : {{ order.payment_method }}
-                    </p>
-                    <p class="card-text">Product Price Per Unit: ₹ {{ cart_item.product_price_at_order }} </p>
-                    <h5 class="card-title mb-2">Subtotal Amount: ₹ {{ cart_item.get_total_at_order }} </h5>                 
-                </div>
-                <div>
-                {% with cart_item.product.offer as product_offer %}
-                        {% with cart_item.product.category.offer as category_offer %}
-                            {% if product_offer or category_offer %}
-                                <p class="card-text">
-                                    {% if product_offer %}
-                                        Offer Name: {{ product_offer.offer_name }}<br>
-                                        Discount Percentage: {{ product_offer.discount_percentage }}%<br>
-                                    {% elif category_offer %}
-                                        Offer Name: {{ category_offer.category_offer_name }}<br>
-                                        Discount Percentage: {{ category_offer.discount_percentage }}%<br>
-                                    {% endif %}
-                                </p>
-                                <p class="card-text">
-                                    Actual Price At Order: ₹{{ cart_item.actual_subtotal }}<br>
-                                    Discounted Price: ₹{{ cart_item.get_total_at_order }}<br>
-                                </p>
-                            {% endif %}
-                        {% endwith %}
-                    {% endwith %}
-                </div>
-                <div class="mb-3">
-                    
-                    {% if cart_item.delivery_status == 'CN' %}
-                        <span class="mt-1 label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
-                    {% elif cart_item.delivery_status == 'RT' %}
-                        <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Returned</strong></span>
-                        <p class="card-text">Refund amount added into Wallet</p>
-                    {% elif cart_item.delivery_status == 'D' %}
-                        <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
-                       
-                            <a class=" btn btn-outline-primary-2" data-toggle="modal" data-target="#returnOrderModal{{ cart_item.id }}">Return Order</a>
+                    <div class="col-md-9 pl-5 mt-2">
+                        <h5 class="card-title">{{ cart_item.product_name_at_order }}</h5>
                         
-
-
-
-                    <!-- Modal for Return -->
-                    <div class="modal fade" id="returnOrderModal{{ cart_item.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <form id="returnForm" method="post" action="{% url 'user_profile:return_order' cart_id=cart_item.id %}">
-                                    {% csrf_token %}
-                                    <div class="modal-header py-4">
-                                        <p class="modal-title text-danger mx-auto">
-                                            <b class="mdi mdi-comment-alert text-warning"></b>
-                                            <b>Are you sure to Return this order</b>
-                                            <i class="fa-sharp fa-light fa-truck-fast fa-bounce"></i>
-                                        </p>
-                                    </div>
-                                    <div class="" style="border: 1px solid #e2e2e2; border-radius: 0px; background: #F3F3F9;">
-                                        <div class="mx-auto mb-3 py-5" style="max-width: 540px; border: 1px solid #e2e2e2; border-radius: 0px; background: #F3F3F9;">
-                                            <div class="row g-0 " style="border: none;">
-                                                <div class="col-md-5  d-flex align-items-center">
-                                                    <img style="width: 170px; height: 170px; border-radius: 7px;" src="{{ cart_item.product.productimage_set.first.image.url }}" class="card-img-start mx-2" alt="...">
-                                                </div>
-                                                <div class="col-md-7">
-                                                    <div class="card-body  my-auto">
-                                                        <h5 class="card-title">
-                                                            {{ cart_item.product_name_at_order }}
-                                                        </h5>
-                                                        <p class="card-text"><small class="text-body-secondary">
-                                                            Quantity :
-                                                            <b>
-                                                                {{ cart_item.quantity }}
-                                                            </b>
-                                                        </small></p>
-                                                        <h6 class="mb-2">Delivery Completed on : <br> <b>
-                                                            {{ expected_delivery_date|date:"D, d F" }}  </b></h6>
-                                                        <h5 class="card-title mb-2">₹ {{ cart_item.get_total_at_order }}</h5>
+                        <p class="card-text">
+                            Quantity: <b>{{ cart_item.quantity }}</b><br>
+                            Payment Method : {{ order.payment_method }}
+                        </p>
+                        <p class="card-text">Product Price Per Unit: ₹ {{ cart_item.product_price_at_order }} </p>
+                        <h5 class="card-title mb-2">Subtotal Amount: ₹ {{ cart_item.get_total_at_order }} </h5>                 
+                        <div class="mb-3">
+                    
+                            {% if cart_item.delivery_status == 'CN' %}
+                                <span class="mt-1 label label-danger" style="color: brown;"><strong>Order Cancelled</strong></span>
+                            {% elif cart_item.delivery_status == 'RT' %}
+                                <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Returned</strong></span>
+                                <p class="card-text">Refund amount added into Wallet</p>
+                            {% elif cart_item.delivery_status == 'D' %}
+                                <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Delivered</strong></span>
+                               
+                                    <a class=" btn btn-outline-primary-2" data-toggle="modal" data-target="#returnOrderModal{{ cart_item.id }}">Return Order</a>
+                                
+        
+        
+        
+                            <!-- Modal for Return -->
+                            <div class="modal fade" id="returnOrderModal{{ cart_item.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <form id="returnForm" method="post" action="{% url 'user_profile:return_order' cart_id=cart_item.id %}">
+                                            {% csrf_token %}
+                                            <div class="modal-header py-4">
+                                                <p class="modal-title text-danger mx-auto">
+                                                    <b class="mdi mdi-comment-alert text-warning"></b>
+                                                    <b>Are you sure to Return this order</b>
+                                                    <i class="fa-sharp fa-light fa-truck-fast fa-bounce"></i>
+                                                </p>
+                                            </div>
+                                            <div class="" style="border: 1px solid #e2e2e2; border-radius: 0px; background: #F3F3F9;">
+                                                <div class="mx-auto mb-3 py-5" style="max-width: 540px; border: 1px solid #e2e2e2; border-radius: 0px; background: #F3F3F9;">
+                                                    <div class="row g-0 " style="border: none;">
+                                                        <div class="col-md-5  d-flex align-items-center">
+                                                            <img style="width: 170px; height: 170px; border-radius: 7px;" src="{{ cart_item.product.productimage_set.first.image.url }}" class="card-img-start mx-2" alt="...">
+                                                        </div>
+                                                        <div class="col-md-7">
+                                                            <div class="card-body  my-auto">
+                                                                <h5 class="card-title">
+                                                                    {{ cart_item.product_name_at_order }}
+                                                                </h5>
+                                                                <p class="card-text"><small class="text-body-secondary">
+                                                                    Quantity :
+                                                                    <b>
+                                                                        {{ cart_item.quantity }}
+                                                                    </b>
+                                                                </small></p>
+                                                                <h6 class="mb-2">Delivery Completed on : <br> <b>
+                                                                    {{ expected_delivery_date|date:"D, d F" }}  </b></h6>
+                                                                <h5 class="card-title mb-2">₹ {{ cart_item.get_total_at_order }}</h5>
+                                                            </div>
+                                                        </div>
                                                     </div>
+                                                    <hr class="m-1">
+                                                
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Not Now</button>
+                                                    <button class="btn btn-dark" type="submit" id="returnBtn{{ cart_item.id }}">
+                                                        Return Now
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <hr class="m-1">
-                                        
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end modal -->
+        
+        
+        
+                            {% elif cart_item.delivery_status == 'SH' %}
+                                <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Shipped</strong></span>
+                                <p>Expected Delivery Date: {{ xpected_delivery_date }}</p>
+                                <a data-toggle="modal" data-target="#cancelOrderModal{{ cart_item.id }}" class=" btn btn-outline-primary-2">Cancel Order</a>
+        
+                            {% else %}
+                            <span class="label label-success" style="color: rgb(42, 165, 79);"><strong>Order Placed</strong></span>
+                            <p>Expected Delivery Date: {{ expected_delivery_date|date:"D, d F" }}</p>
+                            <a data-toggle="modal" data-target="#cancelOrderModal{{ cart_item.id }}" class=" btn btn-outline-primary-2" >Cancel Order</a>
+                            <!-- Modal Cancel Order -->
+                            <div class="modal" id="cancelOrderModal{{ cart_item.id }}" tabindex="-1" role="dialog" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                    <div class="modal-content">
+                                        <!-- Modal Header -->
+                                        <div class="modal-header">
+                                            <h4 class="modal-title">Cancel Order Confirmation</h4>
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
                                         </div>
+                                        <!-- Modal Body -->
+                                        <div class="container mx-5 modal-body">
+                                            <p style="font-size: 18px; font-weight: bold;">Are you sure you want to cancel this order?</p>
+                                        </div>
+                                        <!-- Modal Footer -->
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Not Now</button>
-                                            <button class="btn btn-dark" type="submit" id="returnBtn{{ cart_item.id }}">
-                                                Return Now
-                                            </button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 6px;">Close</button>
+                                            <form method="post" action="{% url 'user_profile:cancel_order' cart_id=cart_item.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger" style="border-radius: 6px;">Cancel Order</button>
+                                            </form>
                                         </div>
                                     </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- end modal -->
-
-
-
-                    {% elif cart_item.delivery_status == 'SH' %}
-                        <span class="mt-1 label label-danger" style="color: rgb(42, 165, 79);"><strong>Order Shipped</strong></span>
-                        <p>Expected Delivery Date: {{ xpected_delivery_date }}</p>
-                        <a data-toggle="modal" data-target="#cancelOrderModal{{ cart_item.id }}" class=" btn btn-outline-primary-2">Cancel Order</a>
-
-                    {% else %}
-                    <span class="label label-success" style="color: rgb(42, 165, 79);"><strong>Order Placed</strong></span>
-                    <p>Expected Delivery Date: {{ expected_delivery_date|date:"D, d F" }}</p>
-                    <a data-toggle="modal" data-target="#cancelOrderModal{{ cart_item.id }}" class=" btn btn-outline-primary-2" >Cancel Order</a>
-                    <!-- Modal Cancel Order -->
-                    <div class="modal" id="cancelOrderModal{{ cart_item.id }}" tabindex="-1" role="dialog" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                            <div class="modal-content">
-                                <!-- Modal Header -->
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Cancel Order Confirmation</h4>
-                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                </div>
-                                <!-- Modal Body -->
-                                <div class="container mx-5 modal-body">
-                                    <p style="font-size: 18px; font-weight: bold;">Are you sure you want to cancel this order?</p>
-                                </div>
-                                <!-- Modal Footer -->
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 6px;">Close</button>
-                                    <form method="post" action="{% url 'user_profile:cancel_order' cart_id=cart_item.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger" style="border-radius: 6px;">Cancel Order</button>
-                                    </form>
                                 </div>
                             </div>
+                            <!-- Cancel order modal ends -->
+        
+                            {% endif %}
                         </div>
                     </div>
-                    <!-- Cancel order modal ends -->
-
-                    {% endif %}
+                    
                 </div>
+                <!-- end box -->
+
+                <div class="col-md-9">
+                    {% with cart_item.product.offer as product_offer %}
+                            {% with cart_item.product.category.offer as category_offer %}
+                                {% if product_offer or category_offer %}
+                                    <p class="card-text">
+                                        {% if product_offer %}
+                                            Offer Name: {{ product_offer.offer_name }}<br>
+                                            Discount Percentage: {{ product_offer.discount_percentage }}%<br>
+                                        {% elif category_offer %}
+                                            Offer Name: {{ category_offer.category_offer_name }}<br>
+                                            Discount Percentage: {{ category_offer.discount_percentage }}%<br>
+                                        {% endif %}
+                                    </p>
+                                    <p class="card-text">
+                                        Actual Price At Order: ₹{{ cart_item.actual_subtotal }}<br>
+                                        Discounted Price: ₹{{ cart_item.get_total_at_order }}<br>
+                                    </p>
+                                {% endif %}
+                            {% endwith %}
+                        {% endwith %}
+                    </div>
+                
+                
+                
                 <div class="card-footer row "
                         style="background: #F3F3F9; display: flex; justify-content: space-between; align-items: center; width: 100%;">                   
                 </div>
