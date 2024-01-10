@@ -65,6 +65,7 @@ def dashboard(request):
         Q(payment_method__in=['RAZ', 'WAL']) & ~Q(cartitem__delivery_status__in=['C', 'RT'])
     )
 )
+           
    
         
         order_delivered =CartItem.objects.filter(
@@ -95,11 +96,11 @@ def dashboard(request):
             start_date = None  
         
         if start_date:
-            all_orders = all_orders.filter(date_added__gte=start_date)
+            all_orders = all_orders_filter.filter(date_added__gte=start_date)
         products = Product.objects.all()
         
-        total_revenue = sum(order.get_total for order in order_delivered)
         total_sales = all_orders_filter.count()
+        total_revenue = sum(order.get_cart_total for order in all_orders)
       
         total_stock = sum(product.stock for product in products)
                      
