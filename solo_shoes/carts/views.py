@@ -151,6 +151,7 @@ def update_cart(request):
 def carts(request, total=0, quantity=0):
     try:
         deduct_price_total = Decimal(0)
+        actual_total = total + deduct_price_total
         if request.user.is_authenticated:
             carts = Cart.objects.filter(user=request.user, complete=False)
             if carts.exists():
