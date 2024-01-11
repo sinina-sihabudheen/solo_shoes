@@ -99,7 +99,7 @@ def dashboard(request):
             all_orders = all_orders_filter.filter(date_added__gte=start_date)
         products = Product.objects.all()
         
-        total_sales = all_orders_filter.count()
+        total_sales = all_orders.count()
         total_revenue = sum(order.get_cart_total for order in all_orders)
       
         total_stock = sum(product.stock for product in products)

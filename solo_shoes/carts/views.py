@@ -231,9 +231,11 @@ def checkout(request):
             # Calculate total and quantity
             total = 0
             quantity = 0
+            discounted_total = 0
             for cart_item in cart_items:
                 total += ((cart_item.product.price * cart_item.quantity) - cart_item.get_total)
                 quantity += cart_item.quantity
+                discounted_total += total
 
            
             cart.save()
@@ -248,6 +250,7 @@ def checkout(request):
                 'total': total,
                 'quantity': quantity,
                 'wallet': wallet,
+                'discounted_total':discounted_total,
             }
 
             return render(request, 'carts/checkout.html', context)
