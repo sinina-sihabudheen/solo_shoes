@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gd__puppd$zxsy)27b2a$uc#%@ldjq2jc6lt^_1427ak373h1h'
+SECRET_KEY = config(SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -96,8 +97,8 @@ DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #         'NAME': 'myproject',
-#         'USER': 'myprojectuser',
-#         'PASSWORD': 'password',
+#         'USER': config('USER'),
+#         'PASSWORD': config('PASSWORD'),
 #         'HOST': 'localhost',
 #         'PORT': '5432',
 #     }
@@ -160,13 +161,13 @@ MEDIA_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  
-EMAIL_PORT = 587  
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'sininasihabudheen@gmail.com'
-EMAIL_HOST_PASSWORD = 'ugpd hzaw iuik howw'  
-DEFAULT_FROM_EMAIL ='sininasihabudheen@gmail.com'
+EMAIL_BACKEND = config(EMAIL_BACKEND)
+EMAIL_HOST = config(EMAIL_HOST) 
+EMAIL_PORT = config(EMAIL_PORT) 
+EMAIL_USE_TLS = config(EMAIL_USE_TLS)
+EMAIL_HOST_USER = config(EMAIL_HOST_USER)
+EMAIL_HOST_PASSWORD = config(EMAIL_HOST_PASSWORD)
+DEFAULT_FROM_EMAIL =config(DEFAULT_FROM_EMAIL)
 
 
 LOGIN_URL = 'adminlogin'  # Assuming 'login' is the name of your login URL pattern
